@@ -1,0 +1,49 @@
+version: '3.8'
+volumes:
+  db-volume:
+    driver: 'local'
+services:
+  db:
+    image: mongo:latest
+    container_name: db
+    restart: always
+    volumes:
+      - db-volume:/data/db
+      # - ./common/scripts/dev/misc:/src
+    ports:
+      - 27017:27017
+    environment:
+      TZ: Asia/Tokyo
+      # MONGO_INITDB_ROOT_USERNAME: root
+      # MONGO_INITDB_ROOT_PASSWORD: example
+    command: mongod --replSet devReplSet
+  nginx:
+    image: nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      TZ: Asia/Tokyo
+    volumes:
+      - ./server/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./server/nginx/proxy.conf:/etc/nginx/proxy.conf
+      - ./server/nginx/mime.types:/etc/nginx/conf/mime.types
+    # depends_on:
+    #   - app
+  # app:
+  #   image: app:1.0.0
+  #   build:
+  #     context: ./src
+  #   container_name: app
+  #   links:
+  #     - db:db
+  #   command: 'tail -f /dev/null'
+  #   working_dir: /works/
+  #   volumes:
+  #     #- /etc/localtime:/etc/localtime
+  #     - ./src/:/works/
+  #   environment:
+  #     - TZ=Asia/Tokyo
+
