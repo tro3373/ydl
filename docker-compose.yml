@@ -30,20 +30,21 @@ services:
       - ./server/nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./server/nginx/proxy.conf:/etc/nginx/proxy.conf
       - ./server/nginx/mime.types:/etc/nginx/conf/mime.types
-    # depends_on:
-    #   - app
-  # app:
-  #   image: app:1.0.0
-  #   build:
-  #     context: ./src
-  #   container_name: app
-  #   links:
-  #     - db:db
-  #   command: 'tail -f /dev/null'
-  #   working_dir: /works/
-  #   volumes:
-  #     #- /etc/localtime:/etc/localtime
-  #     - ./src/:/works/
-  #   environment:
-  #     - TZ=Asia/Tokyo
-
+    depends_on:
+      - app
+  app:
+    image: go-air:1.0.0
+    build:
+      context: ./server/app
+    container_name: app
+    links:
+      - db:db
+    environment:
+      - TZ=Asia/Tokyo
+    working_dir: /go/src
+    volumes:
+      - ./server/app:/go/src
+    ports:
+      - 3000:3000
+    tty:
+      true

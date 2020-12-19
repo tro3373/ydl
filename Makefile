@@ -15,7 +15,7 @@ build:
 
 up: start
 start:
-	docker-compose up -d && docker-compose logs
+	docker-compose up -d && docker-compose logs -f
 stop: down
 down:
 	docker-compose down
@@ -23,7 +23,7 @@ restart: stop start
 
 console: attach
 attach:
-	docker exec -it $(CONTAINERNAME) /bin/bash --login
+	docker exec -it $(CONTAINERNAME) /bin/ash --login
 do:
 	docker exec -it $(CONTAINERNAME) /works/app
 
