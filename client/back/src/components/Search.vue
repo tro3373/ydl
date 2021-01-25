@@ -71,6 +71,7 @@
 import _ from 'lodash';
 import qs from 'query-string';
 import Player from '@/components/Player.vue';
+import client from '@/api/client.js';
 const LOCAL_STRAGE_KEY_PREV_ID = 'local_strage_key_prev_id';
 export default {
   name: 'Search',
@@ -134,10 +135,11 @@ export default {
       const res = _id.match(/^[a-zA-Z0-9_-]{11}$/);
       return !!res;
     },
-    submit() {
+    async submit() {
       this.loader = 'loading';
       if (this.isValidId) {
         localStorage.setItem(LOCAL_STRAGE_KEY_PREV_ID, this.youtubeId);
+        await client.list();
       }
     }
   }

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+main() {
+  mongo <<EOF
+use admin;
+db.auth('root', 'root');
+var cfg = {
+  _id: "rs1",
+  members: [
+    { _id: 0, host: "mongo001:27017", priority: 100 },
+    { _id: 1, host: "mongo002:27017", priority: 10 },
+    { _id: 2, host: "mongo003:27017", priority: 0, arbiterOnly: true }
+  ]
+};
+rs.initiate(cfg);
+EOF
+}
+main "$@"

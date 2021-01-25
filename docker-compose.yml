@@ -1,22 +1,42 @@
 version: '3.8'
-volumes:
-  db-volume:
-    driver: 'local'
 services:
-  db:
+  mongo001:
     image: mongo:latest
-    container_name: db
+    container_name: mongo001
     restart: always
-    volumes:
-      - db-volume:/data/db
-      # - ./common/scripts/dev/misc:/src
+    environment:
+      - TZ=Asia/Tokyo
     ports:
       - 27017:27017
+    depends_on:
+      - mongo002
+      - mongo003
+    volumes:
+      - ./server/mongo/mongo-data/001:/data/db
+      - ./server/mongo/setup_rs:/setup_rs
+    command: mongod --replSet rs1
+  mongo002:
+    image: mongo:latest
+    container_name: mongo002
+    restart: always
     environment:
-      TZ: Asia/Tokyo
-      # MONGO_INITDB_ROOT_USERNAME: root
-      # MONGO_INITDB_ROOT_PASSWORD: example
-    command: mongod --replSet devReplSet
+      - TZ=Asia/Tokyo
+    ports:
+      - 27018:27017
+    volumes:
+      - ./server/mongo/mongo-data/002:/data/db
+    command: mongod --replSet rs1
+  mongo003:
+    image: mongo:latest
+    container_name: mongo003
+    restart: always
+    environment:
+      - TZ=Asia/Tokyo
+    ports:
+      - 27019:27017
+    volumes:
+      - ./server/mongo/mongo-data/003:/data/db
+    command: mongod --replSet rs1
   nginx:
     image: nginx
     container_name: nginx
@@ -31,20 +51,38 @@ services:
       - ./server/nginx/proxy.conf:/etc/nginx/proxy.conf
       - ./server/nginx/mime.types:/etc/nginx/conf/mime.types
     depends_on:
-      - app
-  app:
+      - api
+  api:
     image: go-air:1.0.0
     build:
-      context: ./server/app
-    container_name: app
+      context: ./server/api
+    container_name: api
     links:
-      - db:db
+      - mongo001:db
     environment:
       - TZ=Asia/Tokyo
     working_dir: /go/src
     volumes:
-      - ./server/app:/go/src
+      - ./server/api:/go/src
     ports:
       - 3000:3000
     tty:
       true
+    depends_on:
+      - mongo001
+  client:
+    image: node:15.6.0-alpine3.10
+    # build:
+    #   context: ./client/back
+    container_name: client
+    restart: always
+    environment:
+      TZ: Asia/Tokyo
+    working_dir: /src
+    volumes:
+      - ./client/back:/src
+    ports:
+      - 8080:8080
+    command: yarn serve
+    depends_on:
+      - api
