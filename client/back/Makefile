@@ -6,7 +6,7 @@ init:
 		echo "======================================= "; \
 		echo "==> Executing npm install .."; \
 		echo "======================================= "; \
-		npm i; \
+		yarn install; \
 	fi;
 
 local: init

@@ -5,7 +5,7 @@ module.exports = {
     node: true,
     browser: true,
   },
-  plugins: ['vue'],
+  plugins: ['vue', 'jest'],
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
@@ -13,6 +13,7 @@ module.exports = {
   },
   extends: [
     'eslint:recommended',
+    'plugin:jest/recommended',
     'plugin:vue/essential',
     'prettier',
     // "@vue/prettier",
@@ -22,7 +23,7 @@ module.exports = {
     {
       files: ['**/__tests__/*.{j,t}s?(x)', '**/test/*.spec.{j,t}s?(x)'],
       env: {
-        jest: true,
+        'jest/globals': true,
       },
     },
   ],
