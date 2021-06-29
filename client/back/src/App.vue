@@ -43,11 +43,11 @@ export default {
   name: 'App',
 
   components: {
-    Search
+    Search,
   },
 
   data: () => ({
     //
-  })
+  }),
 };
 </script>

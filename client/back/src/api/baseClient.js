@@ -45,7 +45,7 @@ export default class BaseClient {
       let _headers = params.headers || {};
       params.headers = {
         ...this.defaultHeaders,
-        ..._headers
+        ..._headers,
       };
     }
 
@@ -53,12 +53,7 @@ export default class BaseClient {
     try {
       const res = await axios(params);
       console.info('>>> Requested. status:', res.status);
-      this._debug(
-        `>>> Status: ${res.status} Params:`,
-        params,
-        'Response:',
-        res.data
-      );
+      this._debug(`>>> Status: ${res.status} Params:`, params, 'Response:', res.data);
       // this._debug('>>> Response:', res.data);
       // this._debug(`>>> res:`, res);
       return res;
