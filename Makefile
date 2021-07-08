@@ -25,7 +25,7 @@ down:
 restart: stop start
 
 console:
-	docker exec -it $(CONTAINER_api) /bin/bash --login
+	docker exec -it $(CONTAINER_api) /bin/sh --login
 console_nginx:
 	docker exec -it $(CONTAINER_ngx) /bin/bash --login
 console_db1:
