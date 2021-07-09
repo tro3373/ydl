@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os/exec"
 
 	"context"
 	"log"
@@ -13,7 +14,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"fmt"
+
 	"github.com/tro3373/ydl/middleware"
+	"go.uber.org/zap"
 )
 
 func insertBsonD(col *mongo.Collection) error {
@@ -166,8 +170,24 @@ func mainMain() error {
 func main() {
 	engine := gin.Default()
 	engine.Use(middleware.RecordUaAndTime)
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	engine.GET("/api", func(c *gin.Context) {
+		// TODO test
+		err := exec.Command("../lib/youtube-dl", "Gwv-xqgMWq8", "-o", "./work/%(id)s_%(title)s.%(ext)s").Run()
+		if err != nil {
+			return
+		}
+		out, err := exec.Command("ls", "-la", "Gwv-xqgMWq8").Output()
+		if err != nil {
+			return
+		}
+		logger.Info("### ls -la result", zap.String("out", string(out)))
+		fmt.Printf("@@@ %s", string(out))
+
 		c.JSON(http.StatusOK, gin.H{
 			"message": "hello world",
 		})
