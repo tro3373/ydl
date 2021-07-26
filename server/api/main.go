@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os/exec"
+	"path/filepath"
 
 	"context"
 	"log"
@@ -14,11 +16,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"fmt"
-
 	"github.com/tro3373/ydl/middleware"
 	"go.uber.org/zap"
 )
+
+const workd = "./work"
+const libd = "./work/lib"
 
 func insertBsonD(col *mongo.Collection) error {
 	bsonD := bson.D{
@@ -176,21 +179,87 @@ func main() {
 	}
 
 	engine.GET("/api", func(c *gin.Context) {
-		// TODO test
-		err := exec.Command("../lib/youtube-dl", "Gwv-xqgMWq8", "-o", "./work/%(id)s_%(title)s.%(ext)s").Run()
+		var key = c.Query("key")
+		if len(key) == 0 {
+			logger.Warn("[WARN] ==> Params key is empty. Set default test key.")
+			key = "zkZARKFuzNQ"
+		}
+		err := downloadAudio(key)
 		if err != nil {
+			log.Fatalf("Failed to download. key:%s err:%v", key, err)
 			return
 		}
-		out, err := exec.Command("ls", "-la", "Gwv-xqgMWq8").Output()
-		if err != nil {
-			return
-		}
-		logger.Info("### ls -la result", zap.String("out", string(out)))
-		fmt.Printf("@@@ %s", string(out))
 
 		c.JSON(http.StatusOK, gin.H{
-			"message": "hello world",
+			"message": fmt.Sprintf("Success to download key:%s", key),
 		})
 	})
 	engine.Run(":3000")
+}
+
+// func findResults() {
+// 	// out, err := exec.Command("ls").Output()
+// 	var str = filepath.Join(".", workd, key+"*")
+// 	logger.Info("Key is", zap.String("key", key), zap.String("str", str))
+// 	out, err := exec.Command("ls", "-la", str).Output()
+// 	if err != nil {
+// 		// log.Fatalf("Failed list workd: %v", err)
+// 		logger.Error("Failed to list %v", zap.Error(err))
+// 		c.JSON(http.StatusOK, gin.H{
+// 			"message": fmt.Sprintf("Failed to list %s %v", str, err),
+// 		})
+// 		return
+// 	}
+// 	logger.Info("### ls -la result", zap.String("out", string(out)))
+// 	fmt.Printf("@@@ %s", string(out))
+// 	logger.Info("test")
+// 	fmt.Printf("testt")
+// }
+
+func downloadAudio(key string) error {
+	return startDownload(key, "", true)
+}
+
+func downloadMovie(key string) error {
+	return startDownload(key, "", false)
+}
+
+func startDownload(key string, format string, audio bool) error {
+	res, err := existsPrefix(filepath.Join(workd, key))
+	if err != nil {
+		return err
+	}
+	if res {
+		return nil
+	}
+	return executeYoutubeDl(key, format, audio)
+}
+
+func existsPrefix(name string) (bool, error) {
+	matches, err := filepath.Glob(name + ".*")
+	if err != nil {
+		return false, err
+	}
+	return len(matches) > 0, nil
+}
+
+func executeYoutubeDl(key string, format string, audio bool) error {
+	var args []string
+	args = append(args, key)
+	args = append(args, "-o")
+	if len(format) == 0 {
+		format = "%(id)s_%(title)s.%(ext)s"
+	}
+	args = append(args, filepath.Join(workd, format))
+	if audio {
+		args = append(args, "-x")
+		args = append(args, "--audio-format")
+		args = append(args, "mp3")
+	}
+	err := exec.Command(filepath.Join(libd, "youtube-dl"), args...).Run()
+	if err != nil {
+		log.Fatalf("Failed to executeYoutubeDl %s: %v", key, err)
+		return err
+	}
+	return nil
 }
