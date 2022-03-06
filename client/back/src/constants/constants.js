@@ -3,12 +3,11 @@
 const CommonConstants = {};
 const EnvConstants = {
   dev: {
-    API_PREFIX: 'http://192.168.33.10'
+    API_PREFIX: 'http://192.168.33.10',
   },
   prd: {
-    API_PREFIX:
-      'https://5hsnc6y80l.execute-api.ap-northeast-1.amazonaws.com/prd'
-  }
+    API_PREFIX: 'https://5hsnc6y80l.execute-api.ap-northeast-1.amazonaws.com/prd',
+  },
 };
 
 const genConstants = () => {
@@ -16,7 +15,7 @@ const genConstants = () => {
   let res = {
     STAGE: env,
     ...CommonConstants,
-    ...EnvConstants[env]
+    ...EnvConstants[env],
   };
   return res;
 };

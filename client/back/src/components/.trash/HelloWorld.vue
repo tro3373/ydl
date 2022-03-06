@@ -2,11 +2,7 @@
   <v-container>
     <v-row class="text-center">
       <v-col cols="12">
-        <v-img
-          :src="require('../assets/logo.svg')"
-          class="my-3"
-          contain
-          height="200"/>
+        <v-img :src="require('../assets/logo.svg')" class="my-3" contain height="200" />
       </v-col>
 
       <v-col class="mb-4">
@@ -16,16 +12,12 @@
 
         <p class="subheading font-weight-regular">
           For help and collaboration with other Vuetify developers,
-          <br>please join our online
-          <a
-            href="https://community.vuetifyjs.com"
-            target="_blank">Discord Community</a>
+          <br />please join our online
+          <a href="https://community.vuetifyjs.com" target="_blank">Discord Community</a>
         </p>
       </v-col>
 
-      <v-col
-        class="mb-5"
-        cols="12">
+      <v-col class="mb-5" cols="12">
         <h2 class="headline font-weight-bold mb-3">
           What's next?
         </h2>
@@ -36,15 +28,14 @@
             :key="i"
             :href="next.href"
             class="subheading mx-3"
-            target="_blank">
+            target="_blank"
+          >
             {{ next.text }}
           </a>
         </v-row>
       </v-col>
 
-      <v-col
-        class="mb-5"
-        cols="12">
+      <v-col class="mb-5" cols="12">
         <h2 class="headline font-weight-bold mb-3">
           Important Links
         </h2>
@@ -55,15 +46,14 @@
             :key="i"
             :href="link.href"
             class="subheading mx-3"
-            target="_blank">
+            target="_blank"
+          >
             {{ link.text }}
           </a>
         </v-row>
       </v-col>
 
-      <v-col
-        class="mb-5"
-        cols="12">
+      <v-col class="mb-5" cols="12">
         <h2 class="headline font-weight-bold mb-3">
           Ecosystem
         </h2>
@@ -74,7 +64,8 @@
             :key="i"
             :href="eco.href"
             class="subheading mx-3"
-            target="_blank">
+            target="_blank"
+          >
             {{ eco.text }}
           </a>
         </v-row>

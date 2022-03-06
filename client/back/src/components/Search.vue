@@ -7,7 +7,8 @@
             :active="loading"
             :indeterminate="loading"
             top
-            color="blue accent-4"></v-progress-linear>
+            color="blue accent-4"
+          ></v-progress-linear>
 
           <v-card-title>
             <!-- YouTube Downloader -->
@@ -15,7 +16,8 @@
               v-model="url"
               :rules="rules.url"
               label="youtube url or id を入力"
-              clearable>
+              clearable
+            >
             </v-text-field>
 
             <v-btn
@@ -23,7 +25,8 @@
               dark
               class="ma-2 white--text"
               href="https://www.youtube.com/"
-              target="_blank">
+              target="_blank"
+            >
               探しにいく
               <v-icon>mdi-youtube</v-icon>
             </v-btn>
@@ -52,7 +55,8 @@
               fab
               :loading="loading"
               :disabled="loading"
-              @click="submit">
+              @click="submit"
+            >
               <v-icon>mdi-coffee-to-go</v-icon>
               <template v-slot:loader>
                 <span class="custom-loader">
@@ -76,16 +80,16 @@ const LOCAL_STRAGE_KEY_PREV_ID = 'local_strage_key_prev_id';
 export default {
   name: 'Search',
   components: {
-    Player
+    Player,
   },
 
   watch: {
     loader() {
       const l = this.loader;
       this[l] = !this[l];
-      setTimeout(() => this[l] = false, 3000);
+      setTimeout(() => (this[l] = false), 3000);
       this.loader = null;
-    }
+    },
   },
 
   data() {
@@ -96,12 +100,12 @@ export default {
           () => {
             const res = this.isValidId || 'Invalid id or url.';
             return res;
-          }
-        ]
+          },
+        ],
       },
       type: 'mp3',
       loader: null,
-      loading: false
+      loading: false,
     };
   },
   computed: {
@@ -127,7 +131,7 @@ export default {
         return '';
       }
       return `https://www.youtube.com/embed/${this.youtubeId}`;
-    }
+    },
   },
   methods: {
     validate(id) {
@@ -141,8 +145,8 @@ export default {
         localStorage.setItem(LOCAL_STRAGE_KEY_PREV_ID, this.youtubeId);
         await client.list();
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

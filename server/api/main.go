@@ -1,17 +1,265 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"os/exec"
+	"path/filepath"
+
+	"context"
+	"log"
+	"time"
 
 	"github.com/gin-gonic/gin"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/tro3373/ydl/middleware"
+	"go.uber.org/zap"
 )
+
+const workd = "./work"
+const libd = "./work/lib"
+
+func insertBsonD(col *mongo.Collection) error {
+	bsonD := bson.D{
+		{Key: "str1", Value: "abc"},
+		{Key: "num1", Value: 1},
+		{Key: "str2", Value: "xyz"},
+		{Key: "num2", Value: bson.A{2, 3, 4}},
+		{Key: "subdoc", Value: bson.D{{Key: "str", Value: "subdoc"}, {Key: "num", Value: 987}}},
+		{Key: "date", Value: time.Now()},
+	}
+	_, err := col.InsertOne(context.Background(), bsonD)
+	return err
+}
+
+func insertBsonM(col *mongo.Collection) error {
+	bsonM := bson.M{
+		"str1":   "efg",
+		"num1":   11,
+		"str2":   "opq",
+		"num2":   bson.A{12, 13, 14},
+		"subdoc": bson.M{"str": "subdoc", "num": 987},
+		"date":   time.Now(),
+	}
+	for i := 0; i < 10; i++ {
+		_, err := col.InsertOne(context.Background(), bsonM)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type myType struct {
+	Str1   string
+	Num1   int
+	Str2   string
+	Num2   []int
+	Subdoc struct {
+		Str string
+		Num int
+	}
+	Date time.Time
+}
+
+func insertStruct(col *mongo.Collection) error {
+	doc := myType{
+		"hij",
+		21,
+		"rst",
+		[]int{22, 23, 24},
+		struct {
+			Str string
+			Num int
+		}{"subdoc", 987},
+		time.Now(),
+	}
+	_, err := col.InsertOne(context.Background(), doc)
+	return err
+}
+
+func insertNextBsonM(col *mongo.Collection) error {
+	var num int32
+	var err error
+	if num, err = findMaxNum(col); err != nil {
+		return err
+	}
+	// log.Printf(">>> findedNum: %d\n", num)
+	num++
+	// log.Printf(">>> addedNum: %d\n", num)
+	bsonM := bson.M{
+		"str1":   "efg",
+		"num1":   num,
+		"str2":   "opq",
+		"num2":   bson.A{12, 13, 14},
+		"subdoc": bson.M{"str": "subdoc", "num": 987},
+		"date":   time.Now(),
+	}
+	log.Printf("> Inserting: %d\n", num)
+	_, err = col.InsertOne(context.Background(), bsonM)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func findMaxNum(col *mongo.Collection) (int32, error) {
+
+	var ret int32
+	options := options.Find()
+	options.SetSort(bson.D{bson.E{Key: "num1", Value: -1}})
+	options.SetLimit(1)
+	cursor, err := col.Find(context.Background(), bson.D{}, options)
+	if err != nil {
+		return ret, err
+	}
+	for cursor.Next(context.Background()) {
+		elem := bson.M{}
+		err := cursor.Decode(&elem)
+		if err != nil {
+			return ret, err
+		}
+		ret = elem["num1"].(int32)
+		// log.Printf(">> Max: %d\n", ret)
+		// results = append(results, *elem)
+		// lastValue = elem.Lookup("_id")
+	}
+	// log.Printf(">> Returning: %d\n", ret)
+	return ret, nil
+}
+
+func mainMain() error {
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017/?connect=direct"))
+	if err != nil {
+		return err
+	}
+	if err = client.Connect(context.Background()); err != nil {
+		return err
+	}
+	defer client.Disconnect(context.Background())
+
+	col := client.Database("test").Collection("col")
+	// if err = insertBsonD(col); err != nil {
+	//     return err
+	// }
+	// if err = insertBsonM(col); err != nil {
+	//     return err
+	// }
+	// if err = insertStruct(col); err != nil {
+	//     return err
+	// }
+	for i := 0; i < 10000; i++ {
+		// if _, err = findMaxNum(col); err != nil {
+		//     return err
+		// }
+		if err = insertNextBsonM(col); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// func main() {
+//     if err := mainMain(); err != nil {
+//         log.Fatal(err)
+//     }
+//     log.Println("normal end.")
+// }
 
 func main() {
 	engine := gin.Default()
-	engine.GET("/", func(c *gin.Context) {
+	engine.Use(middleware.RecordUaAndTime)
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	engine.GET("/api", func(c *gin.Context) {
+		var key = c.Query("key")
+		if len(key) == 0 {
+			logger.Warn("[WARN] ==> Params key is empty. Set default test key.")
+			key = "zkZARKFuzNQ"
+		}
+		err := downloadAudio(key)
+		if err != nil {
+			log.Fatalf("Failed to download. key:%s err:%v", key, err)
+			return
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"message": "hello world",
+			"message": fmt.Sprintf("Success to download key:%s", key),
 		})
 	})
 	engine.Run(":3000")
+}
+
+// func findResults() {
+// 	// out, err := exec.Command("ls").Output()
+// 	var str = filepath.Join(".", workd, key+"*")
+// 	logger.Info("Key is", zap.String("key", key), zap.String("str", str))
+// 	out, err := exec.Command("ls", "-la", str).Output()
+// 	if err != nil {
+// 		// log.Fatalf("Failed list workd: %v", err)
+// 		logger.Error("Failed to list %v", zap.Error(err))
+// 		c.JSON(http.StatusOK, gin.H{
+// 			"message": fmt.Sprintf("Failed to list %s %v", str, err),
+// 		})
+// 		return
+// 	}
+// 	logger.Info("### ls -la result", zap.String("out", string(out)))
+// 	fmt.Printf("@@@ %s", string(out))
+// 	logger.Info("test")
+// 	fmt.Printf("testt")
+// }
+
+func downloadAudio(key string) error {
+	return startDownload(key, "", true)
+}
+
+func downloadMovie(key string) error {
+	return startDownload(key, "", false)
+}
+
+func startDownload(key string, format string, audio bool) error {
+	res, err := existsPrefix(filepath.Join(workd, key))
+	if err != nil {
+		return err
+	}
+	if res {
+		return nil
+	}
+	return executeYoutubeDl(key, format, audio)
+}
+
+func existsPrefix(name string) (bool, error) {
+	matches, err := filepath.Glob(name + ".*")
+	if err != nil {
+		return false, err
+	}
+	return len(matches) > 0, nil
+}
+
+func executeYoutubeDl(key string, format string, audio bool) error {
+	var args []string
+	args = append(args, key)
+	args = append(args, "-o")
+	if len(format) == 0 {
+		format = "%(id)s_%(title)s.%(ext)s"
+	}
+	args = append(args, filepath.Join(workd, format))
+	if audio {
+		args = append(args, "-x")
+		args = append(args, "--audio-format")
+		args = append(args, "mp3")
+	}
+	err := exec.Command(filepath.Join(libd, "youtube-dl"), args...).Run()
+	if err != nil {
+		log.Fatalf("Failed to executeYoutubeDl %s: %v", key, err)
+		return err
+	}
+	return nil
 }
