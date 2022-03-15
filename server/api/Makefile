@@ -6,7 +6,7 @@ VERSION := v0.0.1
 # REVISION := $(shell git rev-parse --short HEAD)
 # OSARCH := "darwin/amd64 linux/amd64"
 PACKAGE := github.com/tro3373/$(NAME)
-.DEFAULT_GOAL := run
+.DEFAULT_GOAL := curl
 
 # ifndef GOBIN
 # GOBIN := $(shell echo "$${GOPATH%%:*}/bin")
@@ -60,5 +60,13 @@ build:
 
 .PHONY: run
 run:
-	@go run ./main.go
+	@go run ./main.go |& zap-pretty
 
+.PHONY: curl
+curl:
+	curl \
+		-fSsL \
+		-X POST \
+		-H 'Content-Type: application/json' \
+		-d@sample.json \
+		http://127.0.0.1:3000/api
