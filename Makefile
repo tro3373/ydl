@@ -44,18 +44,3 @@ logs:
 	docker-compose logs
 logsf:
 	docker-compose logs -f
-
-clean: clean_container clean_images
-clean_images:
-	@if [ "$(images)" != "" ] ; then \
-		docker rmi $(images); \
-	fi
-clean_container:
-	@for a in $(all_container) ; do \
-		for b in $(active_container) ; do \
-			if [ "$${a}" = "$${b}" ] ; then \
-				continue 2; \
-			fi; \
-		done; \
-		docker rm $${a}; \
-	done

@@ -6,6 +6,9 @@ VERSION := v0.0.1
 # REVISION := $(shell git rev-parse --short HEAD)
 # OSARCH := "darwin/amd64 linux/amd64"
 PACKAGE := github.com/tro3373/$(NAME)
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+current_dir := $(patsubst %/,%,$(dir $(mkfile_path)))
+
 .DEFAULT_GOAL := curl
 
 # ifndef GOBIN
@@ -36,6 +39,9 @@ tidy:
 .PHONY: build
 build:
 	@env GOOS=linux go build -ldflags="-s -w"
+.PHONY: build-image
+build-image:
+	@$(MAKE) -f ../../Makefile build
 
 # .PHONY: clean
 # clean:
@@ -61,6 +67,13 @@ build:
 .PHONY: run
 run:
 	@go run ./main.go |& zap-pretty
+.PHONY: rund
+rund:
+	docker run --rm -it \
+		-v $(current_dir):/go/src \
+		-w /go/src \
+		-p 3000:3000 \
+		go-air:1.0.0
 
 .PHONY: curl
 curl:
@@ -69,4 +82,4 @@ curl:
 		-X POST \
 		-H 'Content-Type: application/json' \
 		-d@sample.json \
-		http://127.0.0.1:3000/api
+		http://127.0.0.1/api

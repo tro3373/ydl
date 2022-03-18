@@ -94,16 +94,17 @@ func saveRequest(logger *zap.Logger, queued string, req Req) error {
 	key := req.Key()
 
 	timestamp := time.Now().Format("20060102_150405")
-
-	dstDir := filepath.Join(queued, fmt.Sprintf("%s.%s", timestamp, key))
+	saveDirName := fmt.Sprintf("%s.%s", timestamp, key)
+	dstDir := filepath.Join(queued, saveDirName)
 	os.MkdirAll(dstDir, os.ModePerm)
-	jsonPath := filepath.Join(dstDir, fmt.Sprintf("%s.json", key))
-	// logger.Info("==> Saving request..", zap.String("jsonPath", jsonPath), zap.String("req", fmt.Sprintf("%#+v", req)))
-	logger.Info("==> Saving request..", zap.String("jsonPath", jsonPath))
+	saveFileName := fmt.Sprintf("%s.json", key)
+	jsonPath := filepath.Join(dstDir, saveFileName)
 
 	data, _ := json.MarshalIndent(req, "", " ")
 	err := ioutil.WriteFile(jsonPath, data, 0644)
 	if err == nil {
+		// logger.Info("==> Saving request..", zap.String("jsonPath", jsonPath), zap.String("req", fmt.Sprintf("%#+v", req)))
+		logger.Info("==> Request Saved.", zap.String("jsonPath", jsonPath))
 	}
 	return err
 }

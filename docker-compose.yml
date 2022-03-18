@@ -1,20 +1,20 @@
 version: '3.8'
 services:
-  mongo001:
-    image: mongo:latest
-    container_name: mongo001
-    restart: always
-    environment:
-      - TZ=Asia/Tokyo
-    ports:
-      - 27017:27017
-    # depends_on:
-    #   - mongo002
-    #   - mongo003
-    volumes:
-      - ./server/.data/mongo/001:/data/db
-      - ./server/mongo/setup_rs:/setup_rs
-    # command: mongod --replSet rs1
+  # mongo001:
+  #   image: mongo:latest
+  #   container_name: mongo001
+  #   restart: always
+  #   environment:
+  #     - TZ=Asia/Tokyo
+  #   ports:
+  #     - 27017:27017
+  #   # depends_on:
+  #   #   - mongo002
+  #   #   - mongo003
+  #   volumes:
+  #     - ./server/.data/mongo/001:/data/db
+  #     - ./server/mongo/setup_rs:/setup_rs
+  #   # command: mongod --replSet rs1
   # # mongo002:
   # #   image: mongo:latest
   # #   container_name: mongo002
@@ -69,10 +69,10 @@ services:
       - 3000:3000
     tty:
       true
-    links:
-      - mongo001:db
-    depends_on:
-      - mongo001
+    # links:
+    #   - mongo001:db
+    # depends_on:
+    #   - mongo001
   # client:
   #   image: node:15.6.0-alpine3.10
   #   # build:
