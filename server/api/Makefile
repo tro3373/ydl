@@ -75,11 +75,18 @@ rund:
 		-p 3000:3000 \
 		go-air:1.0.0
 
-.PHONY: curl
-curl:
-	curl \
+.PHONY: curl_get
+curl_get:
+	@curl \
+		-fSsL \
+		-H 'Content-Type: application/json' \
+		http://127.0.0.1:3000/api
+
+.PHONY: curl_post
+curl_post:
+	@curl \
 		-fSsL \
 		-X POST \
 		-H 'Content-Type: application/json' \
 		-d@sample.json \
-		http://127.0.0.1/api
+		http://127.0.0.1:3000/api

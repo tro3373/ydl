@@ -1,7 +1,9 @@
 {
   "url": "https://www.youtube.com/watch?v=zkZARKFuzNQ",
-  "title": "",
-  "artist": "",
-  "album": "",
-  "jenre": ""
+  "tag": {
+    "title": "",
+    "artist": "",
+    "album": "",
+    "jenre": ""
+  }
 }

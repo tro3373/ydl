@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"time"
 
 	"log"
@@ -16,27 +15,9 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/tro3373/ydl/middleware"
+	"github.com/tro3373/ydl/request"
 	"go.uber.org/zap"
 )
-
-type Req struct {
-	Url    string `json:"url" binding:"required"`
-	Title  string `json:"title"`
-	Artist string `json:"artist"`
-	Album  string `json:"album"`
-	Jenre  string `json:"jenre"`
-}
-
-func (r Req) Key() string {
-	if len(r.Url) == 0 {
-		return ""
-	}
-	exp := regexp.MustCompile(`^http.*watch\?v\=`)
-	if exp.MatchString(r.Url) {
-		return exp.ReplaceAllString(r.Url, "")
-	}
-	return r.Url
-}
 
 func main() {
 	engine := gin.Default()
@@ -48,29 +29,52 @@ func main() {
 
 	workd := filepath.Join(".", "work")
 	libd := filepath.Join(workd, "lib")
+
 	queued := filepath.Join(workd, "queue")
+	doned := filepath.Join(workd, "done")
 
 	os.MkdirAll(libd, os.ModePerm)
+	os.MkdirAll(doned, os.ModePerm)
 
 	engine.GET("/api", func(c *gin.Context) {
 		var key = c.Query("key")
-		if len(key) == 0 {
-			logger.Warn("[WARN] ==> Params key is empty. Set default test key.")
-			key = "zkZARKFuzNQ"
-		}
-		err := downloadAudio(libd, workd, key)
+		files, err := findJsons(doned, key)
 		if err != nil {
-			log.Fatalf("Failed to download. key:%s err:%v", key, err)
-			return
+			logger.Error("[ERROR] ==> Failed to find jsons.", zap.String("Error:", err.Error()))
+			c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
+		}
+		jsons, err := readJsons(files)
+		if err != nil {
+			logger.Error("[ERROR] ==> Failed to read jsons.", zap.String("Error:", err.Error()))
+			c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"message": fmt.Sprintf("Success to download key:%s", key),
+			"list": jsons,
 		})
+
+		// if len(key) > 0 {
+		// 	// logger.Warn("[WARN] ==> Params key is empty. Set default test key.")
+		// 	// key = "zkZARKFuzNQ"
+		// 	dir := filepath.Join(doned, key)
+		// 	if exists(dir) {
+		// 		logger.Info("Getting ", zap.String("Key", key))
+		// 		// TODO
+		// 	}
+		// }
+		// err := downloadAudio(libd, workd, key)
+		// if err != nil {
+		// 	log.Fatalf("Failed to download. key:%s err:%v", key, err)
+		// 	return
+		// }
+
+		// c.JSON(http.StatusOK, gin.H{
+		// 	"message": fmt.Sprintf("Success to download key:%s", key),
+		// })
 	})
 
 	engine.POST("/api", func(c *gin.Context) {
-		var req Req
+		var req request.Exec
 		if err := c.Bind(&req); err != nil {
 			logger.Error("[ERROR] ==> Failed to bind request.", zap.String("Error:", err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": "BadRequest"})
@@ -90,23 +94,48 @@ func main() {
 	engine.Run(":3000")
 }
 
-func saveRequest(logger *zap.Logger, queued string, req Req) error {
+func findJsons(rootDir, key string) ([]string, error) {
+	if len(key) == 0 {
+		key = "*"
+	}
+	return filepath.Glob(filepath.Join(rootDir, key, "req.json"))
+}
+
+func readJsons(files []string) ([]request.Exec, error) {
+	var res []request.Exec
+	for _, file := range files {
+		raw, err := ioutil.ReadFile(file)
+		if err != nil {
+			return nil, err
+		}
+		var req request.Exec
+		json.Unmarshal(raw, &req)
+		res = append(res, req)
+	}
+	return res, nil
+}
+
+func saveRequest(logger *zap.Logger, dstRootDir string, req request.Exec) error {
 	key := req.Key()
 
 	timestamp := time.Now().Format("20060102_150405")
-	saveDirName := fmt.Sprintf("%s.%s", timestamp, key)
-	dstDir := filepath.Join(queued, saveDirName)
-	os.MkdirAll(dstDir, os.ModePerm)
-	saveFileName := fmt.Sprintf("%s.json", key)
-	jsonPath := filepath.Join(dstDir, saveFileName)
+	req.CreatedAt = timestamp
 
-	data, _ := json.MarshalIndent(req, "", " ")
-	err := ioutil.WriteFile(jsonPath, data, 0644)
-	if err == nil {
-		// logger.Info("==> Saving request..", zap.String("jsonPath", jsonPath), zap.String("req", fmt.Sprintf("%#+v", req)))
-		logger.Info("==> Request Saved.", zap.String("jsonPath", jsonPath))
+	dstDir := filepath.Join(dstRootDir, key)
+	dstFile := filepath.Join(dstDir, "req.json")
+
+	if !exists(dstDir) {
+		os.MkdirAll(dstDir, os.ModePerm)
 	}
-	return err
+
+	logger.Info("==> Saving request..", zap.String("dstFile", dstFile))
+	data, _ := json.MarshalIndent(req, "", " ")
+	return ioutil.WriteFile(dstFile, data, 0644)
+}
+
+func exists(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil
 }
 
 // func findResults() {
