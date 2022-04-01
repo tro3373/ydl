@@ -14,8 +14,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/tro3373/ydl/middleware"
-	"github.com/tro3373/ydl/request"
+	"github.com/tro3373/ydl/ydla/middleware"
+	"github.com/tro3373/ydl/ydla/request"
 	"go.uber.org/zap"
 )
 
