@@ -9,7 +9,7 @@ PACKAGE := github.com/tro3373/$(NAME)
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(patsubst %/,%,$(dir $(mkfile_path)))
 
-.DEFAULT_GOAL := curl
+.DEFAULT_GOAL := run
 
 # ifndef GOBIN
 # GOBIN := $(shell echo "$${GOPATH%%:*}/bin")
