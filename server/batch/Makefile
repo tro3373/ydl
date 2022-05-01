@@ -1,0 +1,33 @@
+# @see
+# https://qiita.com/Syoitu/items/8e7e3215fb7ac9dabc3a
+# https://qiita.com/keitakn/items/f46347f871083356149b
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+current_dir := $(patsubst %/,%,$(dir $(mkfile_path)))
+name := $(shell head -1 $(current_dir)/go.mod|sed -e 's,^.*/,,g')
+version := v0.0.1
+
+.DEFAULT_GOAL := run
+
+.PHONY: deps
+deps:
+	@go list -m all
+
+.PHONY: tidy
+tidy:
+	@go mod tidy
+
+.PHONY: build
+build:
+	@env GOOS=linux go build -ldflags="-s -w"
+.PHONY: build-image
+build-image:
+	@$(MAKE) -f ../../Makefile build
+
+.PHONY: clean
+clean:
+	@[[ -e $(name) ]] && rm -rfv $(name)
+
+# @go run ./main.go $(PWD)/work/queue
+.PHONY: run
+run:
+	@go run ./main.go
