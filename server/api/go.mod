@@ -1,4 +1,4 @@
-module github.com/tro3373/ydl/ydla
+module github.com/tro3373/ydl/api
 
 go 1.18
 

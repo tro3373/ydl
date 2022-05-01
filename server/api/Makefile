@@ -1,32 +1,12 @@
 # @see
 # https://qiita.com/Syoitu/items/8e7e3215fb7ac9dabc3a
 # https://qiita.com/keitakn/items/f46347f871083356149b
-NAME := ydl
-VERSION := v0.0.1
-# REVISION := $(shell git rev-parse --short HEAD)
-# OSARCH := "darwin/amd64 linux/amd64"
-PACKAGE := github.com/tro3373/$(NAME)
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(patsubst %/,%,$(dir $(mkfile_path)))
+name := $(shell head -1 $(current_dir)/go.mod|sed -e 's,^.*/,,g')
+version := v0.0.1
 
 .DEFAULT_GOAL := run
-
-# ifndef GOBIN
-# GOBIN := $(shell echo "$${GOPATH%%:*}/bin")
-# endif
-#
-# COBRA := $(GOBIN)/cobra
-#
-# $(COBRA): ; @go get -v -u github.com/spf13/cobra/cobra
-#
-# .PHONY: init-gen
-# init-gen: $(COBRA)
-# 	@go mod init $(PACKAGE) \
-# 	&& $(COBRA) init --pkg-name $(PACKAGE)
-#
-# .PHONY: add-hello
-# add-hello: $(COBRA)
-# 	@$(COBRA) add hello
 
 .PHONY: deps
 deps:
@@ -43,26 +23,9 @@ build:
 build-image:
 	@$(MAKE) -f ../../Makefile build
 
-# .PHONY: clean
-# clean:
-# 	rm -rf ./bin logs stress
-
-#
-# .PHONY: help
-# help:
-# 	@go run ./main.go --help
-#
-# .PHONY: front
-# front:
-# 	@go run ./main.go front
-#
-# .PHONY: back
-# back:
-# 	@go run ./main.go back
-#
-# .PHONY: reguser
-# reguser:
-# 	@go run ./main.go reguser
+.PHONY: clean
+clean:
+	@[[ -e $(name) ]] && rm -rfv $(name)
 
 .PHONY: run
 run:

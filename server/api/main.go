@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -14,18 +13,21 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/tro3373/ydl/ydla/middleware"
-	"github.com/tro3373/ydl/ydla/request"
+	"github.com/tro3373/ydl/api/middleware"
+	"github.com/tro3373/ydl/api/request"
 	"go.uber.org/zap"
 )
+
+var logger *zap.Logger
 
 func main() {
 	engine := gin.Default()
 	engine.Use(middleware.RecordUaAndTime)
-	logger, err := zap.NewProduction()
+	zapLogger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	logger = zapLogger
 
 	workd := filepath.Join(".", "work")
 	libd := filepath.Join(workd, "lib")
@@ -38,6 +40,7 @@ func main() {
 
 	engine.GET("/api", func(c *gin.Context) {
 		var key = c.Query("key")
+		logger.Info("[INFO] ==> ", zap.String("key", key))
 		files, err := findJsons(doned, key)
 		if err != nil {
 			logger.Error("[ERROR] ==> Failed to find jsons.", zap.String("Error:", err.Error()))
@@ -80,7 +83,7 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"status": "BadRequest"})
 			return
 		}
-		err := saveRequest(logger, queued, req)
+		err := saveRequest(queued, req)
 		if err != nil {
 			logger.Error("[ERROR] ==> Failed to save request.", zap.String("Error:", err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
@@ -101,9 +104,14 @@ func findJsons(rootDir, key string) ([]string, error) {
 	return filepath.Glob(filepath.Join(rootDir, key, "req.json"))
 }
 
+func getJsonPath(dir, key string) string {
+	return filepath.Join(dir, fmt.Sprintf("%s.json", key))
+}
+
 func readJsons(files []string) ([]request.Exec, error) {
 	var res []request.Exec
 	for _, file := range files {
+		logger.Info("[INFO] ==> ", zap.String("file", file))
 		raw, err := ioutil.ReadFile(file)
 		if err != nil {
 			return nil, err
@@ -115,18 +123,16 @@ func readJsons(files []string) ([]request.Exec, error) {
 	return res, nil
 }
 
-func saveRequest(logger *zap.Logger, dstRootDir string, req request.Exec) error {
+func saveRequest(dstRootDir string, req request.Exec) error {
 	key := req.Key()
 
 	timestamp := time.Now().Format("20060102_150405")
 	req.CreatedAt = timestamp
 
-	dstDir := filepath.Join(dstRootDir, key)
-	dstFile := filepath.Join(dstDir, "req.json")
-
-	if !exists(dstDir) {
-		os.MkdirAll(dstDir, os.ModePerm)
+	if !exists(dstRootDir) {
+		os.MkdirAll(dstRootDir, os.ModePerm)
 	}
+	dstFile := getJsonPath(dstRootDir, key)
 
 	logger.Info("==> Saving request..", zap.String("dstFile", dstFile))
 	data, _ := json.MarshalIndent(req, "", " ")
@@ -157,50 +163,50 @@ func exists(filename string) bool {
 // 	fmt.Printf("testt")
 // }
 
-func downloadAudio(libd, workd, key string) error {
-	return startDownload(libd, workd, key, "", true)
-}
-
-func downloadMovie(libd, workd, key string) error {
-	return startDownload(libd, workd, key, "", false)
-}
-
-func startDownload(libd, workd, key, format string, audio bool) error {
-	res, err := existsPrefix(filepath.Join(workd, key))
-	if err != nil {
-		return err
-	}
-	if res {
-		return nil
-	}
-	return executeYoutubeDl(libd, workd, key, format, audio)
-}
-
-func existsPrefix(name string) (bool, error) {
-	matches, err := filepath.Glob(name + ".*")
-	if err != nil {
-		return false, err
-	}
-	return len(matches) > 0, nil
-}
-
-func executeYoutubeDl(libd, workd, key, format string, audio bool) error {
-	var args []string
-	args = append(args, key)
-	args = append(args, "-o")
-	if len(format) == 0 {
-		format = "%(id)s_%(title)s.%(ext)s"
-	}
-	args = append(args, filepath.Join(workd, format))
-	if audio {
-		args = append(args, "-x")
-		args = append(args, "--audio-format")
-		args = append(args, "mp3")
-	}
-	err := exec.Command(filepath.Join(libd, "youtube-dl"), args...).Run()
-	if err != nil {
-		log.Fatalf("Failed to executeYoutubeDl %s: %v", key, err)
-		return err
-	}
-	return nil
-}
+// func downloadAudio(libd, workd, key string) error {
+// 	return startDownload(libd, workd, key, "", true)
+// }
+//
+// func downloadMovie(libd, workd, key string) error {
+// 	return startDownload(libd, workd, key, "", false)
+// }
+//
+// func startDownload(libd, workd, key, format string, audio bool) error {
+// 	res, err := existsPrefix(filepath.Join(workd, key))
+// 	if err != nil {
+// 		return err
+// 	}
+// 	if res {
+// 		return nil
+// 	}
+// 	return executeYoutubeDl(libd, workd, key, format, audio)
+// }
+//
+// func existsPrefix(name string) (bool, error) {
+// 	matches, err := filepath.Glob(name + ".*")
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	return len(matches) > 0, nil
+// }
+//
+// func executeYoutubeDl(libd, workd, key, format string, audio bool) error {
+// 	var args []string
+// 	args = append(args, key)
+// 	args = append(args, "-o")
+// 	if len(format) == 0 {
+// 		format = "%(id)s_%(title)s.%(ext)s"
+// 	}
+// 	args = append(args, filepath.Join(workd, format))
+// 	if audio {
+// 		args = append(args, "-x")
+// 		args = append(args, "--audio-format")
+// 		args = append(args, "mp3")
+// 	}
+// 	err := exec.Command(filepath.Join(libd, "youtube-dl"), args...).Run()
+// 	if err != nil {
+// 		log.Fatalf("Failed to executeYoutubeDl %s: %v", key, err)
+// 		return err
+// 	}
+// 	return nil
+// }
