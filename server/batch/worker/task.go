@@ -11,20 +11,21 @@ import (
 )
 
 type Task struct {
-	Ctx    Ctx
-	Json   string
-	Req    *request.Exec
-	DstDir string
+	Ctx           Ctx
+	QueueJsonPath string
+	DoneJsonPath  string
+	Req           *request.Exec
+	DstDir        string
 
 	Thumbnail     string
 	FileNameMovie string
 	FileNameAudio string
 }
 
-func NewTask(ctx Ctx, filepath string) (Task, error) {
+func NewTask(ctx Ctx, queueJsonPath string) (Task, error) {
 	task := Task{
-		Ctx:  ctx,
-		Json: filepath,
+		Ctx:           ctx,
+		QueueJsonPath: queueJsonPath,
 	}
 	req, err := task.readJson()
 	if err != nil {
@@ -40,6 +41,7 @@ func NewTask(ctx Ctx, filepath string) (Task, error) {
 	if err != nil {
 		return task, err
 	}
+	task.DoneJsonPath = filepath.Join(task.DstDir, "req.json")
 	return task, nil
 }
 
@@ -48,9 +50,9 @@ func (task Task) Key() string {
 }
 
 func (task Task) readJson() (*request.Exec, error) {
-	raw, err := ioutil.ReadFile(task.Json)
+	raw, err := ioutil.ReadFile(task.QueueJsonPath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to read json %s", task.Json)
+		return nil, errors.Wrapf(err, "Failed to read json %s", task.QueueJsonPath)
 	}
 	var req request.Exec
 	json.Unmarshal(raw, &req)
@@ -100,4 +102,15 @@ func (task Task) HasMovie() bool {
 }
 func (task Task) HasAudio() bool {
 	return len(task.FileNameAudio) > 0
+}
+
+func (task Task) Done() error {
+	dstFile := task.DoneJsonPath
+
+	data, _ := json.MarshalIndent(task.Req, "", " ")
+	err := ioutil.WriteFile(dstFile, data, 0644)
+	if err != nil {
+		return err
+	}
+	return os.Remove(task.QueueJsonPath)
 }
