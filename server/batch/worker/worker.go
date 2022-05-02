@@ -1,16 +1,10 @@
 package worker
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/pkg/errors"
-	"github.com/tro3373/ydl/batch/request"
 )
 
 func Start(ctx Ctx, event fsnotify.Event) {
@@ -35,13 +29,12 @@ func startTasks(ctx Ctx) error {
 	if err != nil {
 		return err
 	}
-	// queued := filepath.Join(workDir, "queue")
 	jsons, err := findJsons(ctx.QueueDir)
 	if err != nil {
 		return err
 	}
 	for _, json := range jsons {
-		err := startDownload(ctx, json)
+		err := handleJson(ctx, json)
 		if err != nil {
 			return err
 		}
@@ -50,51 +43,26 @@ func startTasks(ctx Ctx) error {
 }
 
 func findJsons(dir string) ([]string, error) {
-	return filepath.Glob(filepath.Join(dir, "*", "*.json"))
+	return filepath.Glob(filepath.Join(dir, "*.json"))
 }
 
-func startDownload(ctx Ctx, jsonPath string) error {
-	raw, err := ioutil.ReadFile(jsonPath)
+func handleJson(ctx Ctx, jsonPath string) error {
+	task, err := NewTask(ctx, jsonPath)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to read json %s", jsonPath)
-	}
-	var req request.Exec
-	json.Unmarshal(raw, &req)
-	return executeYoutubeDl(ctx, req)
-}
-
-// func exists(filename string) bool {
-// 	_, err := os.Stat(filename)
-// 	return os.IsExist(err)
-// }
-// func existsPrefix(name string) (bool, error) {
-// 	matches, err := filepath.Glob(name + ".*")
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	return len(matches) > 0, nil
-// }
-//
-
-func executeYoutubeDl(ctx Ctx, req request.Exec) error {
-	var args []string
-	key := req.Key()
-	args = append(args, key)
-	args = append(args, "-o")
-	format := "%(id)s_%(title)s.%(ext)s"
-	doned := ctx.DoneDir
-	libd := ctx.LibDir
-	args = append(args, filepath.Join(doned, format))
-
-	// for audio output
-	args = append(args, "-x")
-	args = append(args, "--audio-format")
-	args = append(args, "mp3")
-
-	err := exec.Command(filepath.Join(libd, ctx.YoutubeDl), args...).Run()
-	if err != nil {
-		log.Fatalf("Failed to executeYoutubeDl %s: %v", key, err)
 		return err
 	}
+
+	if !task.HasMovie() {
+		err = executeYoutubeDl(task)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = executeFfmpeg(task)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -10,6 +10,15 @@ func exists(filename string) bool {
 	return os.IsExist(err)
 }
 
+// func existsPrefix(name string) (bool, error) {
+// 	matches, err := filepath.Glob(name + ".*")
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	return len(matches) > 0, nil
+// }
+//
+
 func touch(path string) error {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {

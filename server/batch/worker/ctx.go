@@ -1,5 +1,7 @@
 package worker
 
+import "path/filepath"
+
 type Ctx struct {
 	WorkDir   string
 	QueueDir  string
@@ -16,4 +18,8 @@ func NewCtx(work, queue, lib, done string) Ctx {
 		DoneDir:   done,
 		YoutubeDl: "youtube-dl",
 	}
+}
+
+func (ctx Ctx) DestDir(key string) string {
+	return filepath.Join(ctx.DoneDir, key)
 }
