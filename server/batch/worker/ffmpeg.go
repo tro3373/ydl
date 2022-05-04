@@ -10,9 +10,10 @@ import (
 
 func executeFfmpeg(task *Task) error {
 
-	fmt.Println("=============================================================")
-	fmt.Println("=> Start executeFfmpeg", task.String())
-	fmt.Println("=============================================================")
+	// fmt.Println("=============================================================")
+	// fmt.Println("=> Start executeFfmpeg", task.String())
+	// fmt.Println("=============================================================")
+	fmt.Println("=> Converting mp3 via ffmpeg..")
 
 	// ctx := task.Ctx
 	req := task.Req
@@ -69,5 +70,5 @@ func appendMetaDataIfPresent(args []string, key, val string) []string {
 		return args
 	}
 	args = append(args, "-metadata")
-	return append(args, fmt.Sprintf("%s='%s'", key, val))
+	return append(args, fmt.Sprintf("%s=%s", key, val))
 }

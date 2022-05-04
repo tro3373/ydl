@@ -14,10 +14,15 @@ func main() {
 	if len(os.Args) > 1 {
 		workDir = os.Args[1]
 	}
-	ctx := initializeDir(workDir)
+	ctx, err := initializeDir(workDir)
+	if err != nil {
+		fmt.Println("Initialize Error", err)
+		os.Exit(1)
+	}
+
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		fmt.Println("Error", err)
+		fmt.Println("New Watcher Error", err)
 		os.Exit(1)
 	}
 	fmt.Println("==> Watching", ctx.QueueDir, "..")
@@ -31,7 +36,7 @@ func main() {
 	<-done
 }
 
-func initializeDir(workRootDir string) worker.Ctx {
+func initializeDir(workRootDir string) (worker.Ctx, error) {
 	if len(workRootDir) == 0 {
 		ex, err := os.Executable()
 		if err != nil {

@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -14,8 +15,8 @@ type Ctx struct {
 	YoutubeDl string
 }
 
-func NewCtx(work, lib, queue, doing, done string) Ctx {
-	return Ctx{
+func NewCtx(work, lib, queue, doing, done string) (Ctx, error) {
+	ctx := Ctx{
 		WorkDir:   work,
 		LibDir:    lib,
 		QueueDir:  queue,
@@ -23,9 +24,12 @@ func NewCtx(work, lib, queue, doing, done string) Ctx {
 		DoneDir:   done,
 		YoutubeDl: "youtube-dl",
 	}
+	err := ctx.Clean()
+	return ctx, err
 }
 
 func (ctx Ctx) Clean() error {
+	fmt.Println("==> Cleaning", ctx.DoingDir)
 	err := os.RemoveAll(ctx.DoingDir)
 	if err != nil {
 		return err

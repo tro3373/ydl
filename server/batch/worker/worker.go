@@ -25,11 +25,7 @@ func Start(ctx Ctx, event fsnotify.Event) {
 }
 
 func startTasks(ctx Ctx) error {
-	err := ctx.Clean()
-	if err != nil {
-		return err
-	}
-	err = updateYoutubeDlIfNeeded(ctx)
+	err := updateYoutubeDlIfNeeded(ctx)
 	if err != nil {
 		return err
 	}

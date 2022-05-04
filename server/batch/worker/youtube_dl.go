@@ -11,11 +11,12 @@ import (
 
 func executeYoutubeDl(task *Task) error {
 
-	fmt.Println("=============================================================")
-	fmt.Println("=> Start executeYoutubeDl", task.String())
-	fmt.Println("=============================================================")
+	// fmt.Println("=============================================================")
+	// fmt.Println("=> Start executeYoutubeDl", task.String())
+	// fmt.Println("=============================================================")
 	ctx := task.Ctx
 	req := task.Req
+	fmt.Println("=> Downloading via", ctx.YoutubeDl, "..")
 
 	// dir, err := ioutil.TempDir("", "")
 	// if err != nil {

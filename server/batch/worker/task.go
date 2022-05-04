@@ -127,15 +127,26 @@ func (task *Task) HasAudio() bool {
 }
 
 func (task *Task) Done() error {
+	if !exists(task.DoneDir) {
+		return os.Rename(task.DoingDir, task.DoneDir)
+	}
 	err := task.findTargetFile(task.DoingDir)
 	if err != nil {
 		return err
 	}
-	task.RenameDoing2Done(task.PathReq)
-	task.RenameDoing2Done(task.PathThumbnail)
-	task.RenameDoing2Done(task.PathMovie)
-	task.RenameDoing2Done(task.PathAudio)
-	return task.Clean()
+	err = task.RenameDoing2Done(task.PathReq)
+	if err != nil {
+		return err
+	}
+	err = task.RenameDoing2Done(task.PathThumbnail)
+	if err != nil {
+		return err
+	}
+	err = task.RenameDoing2Done(task.PathMovie)
+	if err != nil {
+		return err
+	}
+	return task.RenameDoing2Done(task.PathAudio)
 }
 
 func (task *Task) RenameDoing2Done(src string) error {
@@ -147,9 +158,6 @@ func (task *Task) RenameDoing2Done(src string) error {
 		return nil
 	}
 	dst := strings.Replace(src, "doing", "done", -1)
+	fmt.Println("===> Renaming from:", src, "to:", dst)
 	return os.Rename(src, dst)
-}
-
-func (task *Task) Clean() error {
-	return os.RemoveAll(task.DoingDir)
 }
