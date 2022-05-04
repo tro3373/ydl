@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func executeFfmpeg(task Task) error {
+func executeFfmpeg(task *Task) error {
 
 	fmt.Println("=============================================================")
 	fmt.Println("=> Start executeFfmpeg", task.String())
@@ -28,10 +28,31 @@ func executeFfmpeg(task Task) error {
 	if len(task.PathThumbnail) > 0 {
 		args = append(args, "-i", task.PathThumbnail, "-map", "0:a", "-map", "1:v")
 	}
-	args = appendIfPresent(args, "title", req.Tag.Title)
-	args = appendIfPresent(args, "artist", req.Tag.Artist)
-	args = appendIfPresent(args, "album", req.Tag.Album)
-	args = appendIfPresent(args, "genre", req.Tag.Genre)
+	args = appendMetaDataIfPresent(args, "title", req.Tag.Title)
+	args = appendMetaDataIfPresent(args, "artist", req.Tag.Artist)
+	album := req.Tag.Album
+	if len(album) == 0 {
+		album = req.Tag.Title
+	}
+	args = appendMetaDataIfPresent(args, "album", album)
+	genre := req.Tag.Genre
+	f := "Favorite artist of "
+	fw := f + "West"
+	fj := f + "Japan"
+	if len(genre) == 0 {
+		genre = fw
+	}
+	switch genre {
+	case "ja", "jap", "Japan", "Ja":
+		genre = fj
+	case "en", "En", "West":
+		genre = fw
+	}
+	args = appendMetaDataIfPresent(args, "genre", genre)
+
+	args = append(args, task.PathAudio)
+
+	fmt.Println(append([]string{"==> Executing: ffmpeg"}, args...))
 	cmd := exec.Command("ffmpeg", args...)
 	cmd.Dir = task.DoingDir
 	cmd.Stdout = os.Stdout
@@ -43,9 +64,10 @@ func executeFfmpeg(task Task) error {
 	return nil
 }
 
-func appendIfPresent(args []string, key, val string) []string {
+func appendMetaDataIfPresent(args []string, key, val string) []string {
 	if len(val) == 0 {
 		return args
 	}
-	return append(args, fmt.Sprintf("%s=%s", key, val))
+	args = append(args, "-metadata")
+	return append(args, fmt.Sprintf("%s='%s'", key, val))
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func executeYoutubeDl(task Task) error {
+func executeYoutubeDl(task *Task) error {
 
 	fmt.Println("=============================================================")
 	fmt.Println("=> Start executeYoutubeDl", task.String())
@@ -30,7 +30,7 @@ func executeYoutubeDl(task Task) error {
 	args = append(args, "-o")
 	// format := "%(id)s_%(title)s.%(ext)s"
 	format := "src.%(ext)s"
-	dstd := filepath.Join(ctx.DoneDir, key)
+	dstd := filepath.Join(ctx.DoingDir, key)
 	args = append(args, filepath.Join(dstd, format))
 
 	// // for audio output
@@ -40,6 +40,7 @@ func executeYoutubeDl(task Task) error {
 
 	args = append(args, key)
 
+	fmt.Println(append([]string{"==> Executing: ", filepath.Join(ctx.LibDir, ctx.YoutubeDl)}, args...))
 	cmd := exec.Command(filepath.Join(ctx.LibDir, ctx.YoutubeDl), args...)
 	cmd.Dir = dstd
 	cmd.Stdout = os.Stdout
@@ -49,7 +50,7 @@ func executeYoutubeDl(task Task) error {
 	if err != nil {
 		return errors.Wrapf(err, "Failed to executeYoutubeDl %s", err)
 	}
-	err = task.findTargetFile(task.DoingDir)
+	err = task.findTargetFile(dstd)
 	if err != nil {
 		return err
 	}

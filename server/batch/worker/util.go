@@ -22,7 +22,7 @@ func exists(filename string) bool {
 func touch(path string) error {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		file, err := os.Create("temp.txt")
+		file, err := os.Create(path)
 		if err != nil {
 			return err
 		}

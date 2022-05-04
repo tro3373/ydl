@@ -55,6 +55,9 @@ func handleJson(ctx Ctx, jsonPath string) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("=============================================================")
+	fmt.Println("=> Start handleJson", task.String())
+	fmt.Println("=============================================================")
 
 	if !task.HasMovie() {
 		err = executeYoutubeDl(task)

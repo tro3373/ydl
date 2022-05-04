@@ -25,13 +25,13 @@ type Task struct {
 	PathAudio     string
 }
 
-func NewTask(ctx Ctx, jsonPath string) (Task, error) {
+func NewTask(ctx Ctx, jsonPath string) (*Task, error) {
 	task := Task{
 		Ctx: ctx,
 	}
 	req, err := task.readJson(jsonPath)
 	if err != nil {
-		return task, err
+		return &task, err
 	}
 	task.Req = req
 	key := req.Key()
@@ -43,25 +43,25 @@ func NewTask(ctx Ctx, jsonPath string) (Task, error) {
 	task.DoneDir = ctx.GetDoneDir(key)
 	err = task.findTargetFile(task.DoneDir)
 	if err != nil {
-		return task, err
+		return &task, err
 	}
 	task.PathReq = filepath.Join(task.DoingDir, "req.json")
 	err = os.Rename(jsonPath, task.PathReq)
 	if err != nil {
-		return task, err
+		return &task, err
 	}
-	return task, nil
+	return &task, nil
 }
 
-func (task Task) String() string {
+func (task *Task) String() string {
 	return fmt.Sprintf("%#+v", task)
 }
 
-func (task Task) Key() string {
+func (task *Task) Key() string {
 	return task.Req.Key()
 }
 
-func (task Task) readJson(jsonPath string) (*request.Exec, error) {
+func (task *Task) readJson(jsonPath string) (*request.Exec, error) {
 	raw, err := ioutil.ReadFile(jsonPath)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed to read json %s", jsonPath)
@@ -71,7 +71,7 @@ func (task Task) readJson(jsonPath string) (*request.Exec, error) {
 	return &req, nil
 }
 
-func (task Task) findTargetFile(targetDir string) error {
+func (task *Task) findTargetFile(targetDir string) error {
 	if !exists(targetDir) {
 		return nil
 	}
@@ -87,14 +87,17 @@ func (task Task) findTargetFile(targetDir string) error {
 	}
 	for _, name := range names {
 		fullPath := filepath.Join(targetDir, name)
+		// fmt.Println("==> findTargetFile: handling.. ", fullPath)
 		switch filepath.Ext(name) {
 		case ".json":
 			continue
 		case ".jpg", ".png", ".webp":
+			// fmt.Println("==> findTargetFile: set jpg. ")
 			task.PathThumbnail = fullPath
 		case ".mp3":
 			task.PathAudio = fullPath
 		default:
+			// fmt.Println("==> findTargetFile: set movie. ", task.PathMovie)
 			if len(task.PathMovie) > 0 {
 				continue
 			}
@@ -105,7 +108,7 @@ func (task Task) findTargetFile(targetDir string) error {
 	return nil
 }
 
-func (task Task) setPathAudioFromPathMovieIfNeeded() {
+func (task *Task) setPathAudioFromPathMovieIfNeeded() {
 	if len(task.PathAudio) > 0 {
 		return
 	}
@@ -116,14 +119,14 @@ func (task Task) setPathAudioFromPathMovieIfNeeded() {
 	task.PathAudio = filepath.Join(dir, name) + ".mp3"
 }
 
-func (task Task) HasMovie() bool {
-	return len(task.PathMovie) > 0
+func (task *Task) HasMovie() bool {
+	return len(task.PathMovie) > 0 && exists(task.PathMovie)
 }
-func (task Task) HasAudio() bool {
-	return len(task.PathAudio) > 0
+func (task *Task) HasAudio() bool {
+	return len(task.PathAudio) > 0 && exists(task.PathAudio)
 }
 
-func (task Task) Done() error {
+func (task *Task) Done() error {
 	err := task.findTargetFile(task.DoingDir)
 	if err != nil {
 		return err
@@ -135,7 +138,7 @@ func (task Task) Done() error {
 	return task.Clean()
 }
 
-func (task Task) RenameDoing2Done(src string) error {
+func (task *Task) RenameDoing2Done(src string) error {
 	if len(src) == 0 {
 		return nil
 	}
@@ -147,6 +150,6 @@ func (task Task) RenameDoing2Done(src string) error {
 	return os.Rename(src, dst)
 }
 
-func (task Task) Clean() error {
+func (task *Task) Clean() error {
 	return os.RemoveAll(task.DoingDir)
 }

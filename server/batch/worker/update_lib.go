@@ -19,6 +19,9 @@ func updateYoutubeDlIfNeeded(ctx Ctx) error {
 	fmt.Println("==> Start checking", ctx.YoutubeDl, "version..")
 	repo := fmt.Sprintf("ytdl-org/%s", ctx.YoutubeDl)
 	result, err := getGhReleaseLatestTagInfo(repo)
+	if err != nil {
+		return err
+	}
 
 	tag := result["tag_name"].(string)
 	if err != nil || len(tag) == 0 {
