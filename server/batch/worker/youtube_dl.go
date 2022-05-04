@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -10,6 +11,9 @@ import (
 
 func executeYoutubeDl(task Task) error {
 
+	fmt.Println("=============================================================")
+	fmt.Println("=> Start executeYoutubeDl", task.String())
+	fmt.Println("=============================================================")
 	ctx := task.Ctx
 	req := task.Req
 
@@ -24,7 +28,8 @@ func executeYoutubeDl(task Task) error {
 
 	args = append(args, "--write-thumbnail")
 	args = append(args, "-o")
-	format := "%(id)s_%(title)s.%(ext)s"
+	// format := "%(id)s_%(title)s.%(ext)s"
+	format := "src.%(ext)s"
 	dstd := filepath.Join(ctx.DoneDir, key)
 	args = append(args, filepath.Join(dstd, format))
 
@@ -44,7 +49,7 @@ func executeYoutubeDl(task Task) error {
 	if err != nil {
 		return errors.Wrapf(err, "Failed to executeYoutubeDl %s", err)
 	}
-	err = task.findFile()
+	err = task.findTargetFile(task.DoingDir)
 	if err != nil {
 		return err
 	}

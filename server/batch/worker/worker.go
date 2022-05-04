@@ -25,7 +25,11 @@ func Start(ctx Ctx, event fsnotify.Event) {
 }
 
 func startTasks(ctx Ctx) error {
-	err := updateYoutubeDlIfNeeded(ctx)
+	err := ctx.Clean()
+	if err != nil {
+		return err
+	}
+	err = updateYoutubeDlIfNeeded(ctx)
 	if err != nil {
 		return err
 	}
@@ -64,5 +68,5 @@ func handleJson(ctx Ctx, jsonPath string) error {
 		return err
 	}
 
-	return nil
+	return task.Done()
 }

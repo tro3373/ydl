@@ -29,6 +29,7 @@ func updateYoutubeDlIfNeeded(ctx Ctx) error {
 
 	libd := ctx.LibDir
 	dstd := filepath.Join(libd, tag)
+	//  ===> libd:/mnt/data/ghq/github.com/tro3373/ydl/server/batch/work/lib dstd:/mnt/data/ghq/github.com/tro3373/ydl/server/batch/work/lib/2021.12.17.
 	if exists(dstd) {
 		fmt.Printf("===> Already %s exist.\n", dstd)
 		return nil

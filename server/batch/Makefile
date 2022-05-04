@@ -27,7 +27,6 @@ build-image:
 clean:
 	@[[ -e $(name) ]] && rm -rfv $(name)
 
-# @go run ./main.go $(PWD)/work/queue
 .PHONY: run
 run:
-	@go run ./main.go
+	@go run ./main.go $(PWD)/work

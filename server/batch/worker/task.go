@@ -2,65 +2,80 @@ package worker
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/tro3373/ydl/batch/request"
 )
 
 type Task struct {
-	Ctx           Ctx
-	QueueJsonPath string
-	DoneJsonPath  string
-	Req           *request.Exec
-	DstDir        string
+	Ctx      Ctx
+	Req      *request.Exec
+	DoingDir string
+	DoneDir  string
 
-	Thumbnail     string
-	FileNameMovie string
-	FileNameAudio string
+	PathReq       string
+	PathThumbnail string
+	PathMovie     string
+	PathAudio     string
 }
 
-func NewTask(ctx Ctx, queueJsonPath string) (Task, error) {
+func NewTask(ctx Ctx, jsonPath string) (Task, error) {
 	task := Task{
-		Ctx:           ctx,
-		QueueJsonPath: queueJsonPath,
+		Ctx: ctx,
 	}
-	req, err := task.readJson()
+	req, err := task.readJson(jsonPath)
 	if err != nil {
 		return task, err
 	}
 	task.Req = req
 	key := req.Key()
-	task.DstDir = ctx.DestDir(key)
-	if !exists(task.DstDir) {
-		os.MkdirAll(task.DstDir, 0775)
+
+	task.DoingDir = ctx.GetDoingDir(key)
+	if !exists(task.DoingDir) {
+		os.MkdirAll(task.DoingDir, 0775)
 	}
-	err = task.findFile()
+	task.DoneDir = ctx.GetDoneDir(key)
+	err = task.findTargetFile(task.DoneDir)
 	if err != nil {
 		return task, err
 	}
-	task.DoneJsonPath = filepath.Join(task.DstDir, "req.json")
+	task.PathReq = filepath.Join(task.DoingDir, "req.json")
+	err = os.Rename(jsonPath, task.PathReq)
+	if err != nil {
+		return task, err
+	}
 	return task, nil
+}
+
+func (task Task) String() string {
+	return fmt.Sprintf("%#+v", task)
 }
 
 func (task Task) Key() string {
 	return task.Req.Key()
 }
 
-func (task Task) readJson() (*request.Exec, error) {
-	raw, err := ioutil.ReadFile(task.QueueJsonPath)
+func (task Task) readJson(jsonPath string) (*request.Exec, error) {
+	raw, err := ioutil.ReadFile(jsonPath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to read json %s", task.QueueJsonPath)
+		return nil, errors.Wrapf(err, "Failed to read json %s", jsonPath)
 	}
 	var req request.Exec
 	json.Unmarshal(raw, &req)
 	return &req, nil
 }
 
-func (task Task) findFile() error {
-	f, err := os.Open(task.DstDir)
+func (task Task) findTargetFile(targetDir string) error {
+	if !exists(targetDir) {
+		return nil
+	}
+	f, err := os.Open(targetDir)
 	if err != nil {
 		return err
 	}
@@ -71,46 +86,67 @@ func (task Task) findFile() error {
 		return err
 	}
 	for _, name := range names {
+		fullPath := filepath.Join(targetDir, name)
 		switch filepath.Ext(name) {
 		case ".json":
 			continue
-		case ".jpg", ".png":
-			task.Thumbnail = name
+		case ".jpg", ".png", ".webp":
+			task.PathThumbnail = fullPath
 		case ".mp3":
-			task.FileNameAudio = name
+			task.PathAudio = fullPath
 		default:
-			task.FileNameMovie = name
-			task.setAudioFileNameFromMovieIfNeeded()
+			if len(task.PathMovie) > 0 {
+				continue
+			}
+			task.PathMovie = fullPath
+			task.setPathAudioFromPathMovieIfNeeded()
 		}
 	}
 	return nil
 }
 
-func (task Task) setAudioFileNameFromMovieIfNeeded() {
-	if len(task.FileNameAudio) > 0 {
+func (task Task) setPathAudioFromPathMovieIfNeeded() {
+	if len(task.PathAudio) > 0 {
 		return
 	}
-	movie := task.FileNameMovie
+	movie := task.PathMovie
 	dir := filepath.Dir(movie)
 	ext := filepath.Ext(movie)
 	name := filepath.Base(movie[:len(movie)-len(ext)])
-	task.FileNameAudio = filepath.Join(dir, name) + ".mp3"
+	task.PathAudio = filepath.Join(dir, name) + ".mp3"
 }
 
 func (task Task) HasMovie() bool {
-	return len(task.FileNameMovie) > 0
+	return len(task.PathMovie) > 0
 }
 func (task Task) HasAudio() bool {
-	return len(task.FileNameAudio) > 0
+	return len(task.PathAudio) > 0
 }
 
 func (task Task) Done() error {
-	dstFile := task.DoneJsonPath
-
-	data, _ := json.MarshalIndent(task.Req, "", " ")
-	err := ioutil.WriteFile(dstFile, data, 0644)
+	err := task.findTargetFile(task.DoingDir)
 	if err != nil {
 		return err
 	}
-	return os.Remove(task.QueueJsonPath)
+	task.RenameDoing2Done(task.PathReq)
+	task.RenameDoing2Done(task.PathThumbnail)
+	task.RenameDoing2Done(task.PathMovie)
+	task.RenameDoing2Done(task.PathAudio)
+	return task.Clean()
+}
+
+func (task Task) RenameDoing2Done(src string) error {
+	if len(src) == 0 {
+		return nil
+	}
+	r := regexp.MustCompile("doing")
+	if !r.MatchString(src) {
+		return nil
+	}
+	dst := strings.Replace(src, "doing", "done", -1)
+	return os.Rename(src, dst)
+}
+
+func (task Task) Clean() error {
+	return os.RemoveAll(task.DoingDir)
 }

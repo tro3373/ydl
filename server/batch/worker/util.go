@@ -7,7 +7,7 @@ import (
 
 func exists(filename string) bool {
 	_, err := os.Stat(filename)
-	return os.IsExist(err)
+	return !os.IsNotExist(err)
 }
 
 // func existsPrefix(name string) (bool, error) {

@@ -10,26 +10,30 @@ import (
 
 func executeFfmpeg(task Task) error {
 
+	fmt.Println("=============================================================")
+	fmt.Println("=> Start executeFfmpeg", task.String())
+	fmt.Println("=============================================================")
+
 	// ctx := task.Ctx
 	req := task.Req
 
 	if task.HasAudio() {
-		err := os.Remove(task.FileNameAudio)
+		err := os.Remove(task.PathAudio)
 		if err != nil {
 			return err
 		}
 	}
 	var args []string
-	args = append(args, "-i", task.FileNameMovie)
-	if len(task.Thumbnail) > 0 {
-		args = append(args, "-i", task.Thumbnail, "-map", "0:a", "-map", "1:v")
+	args = append(args, "-i", task.PathMovie)
+	if len(task.PathThumbnail) > 0 {
+		args = append(args, "-i", task.PathThumbnail, "-map", "0:a", "-map", "1:v")
 	}
 	args = appendIfPresent(args, "title", req.Tag.Title)
 	args = appendIfPresent(args, "artist", req.Tag.Artist)
 	args = appendIfPresent(args, "album", req.Tag.Album)
 	args = appendIfPresent(args, "genre", req.Tag.Genre)
 	cmd := exec.Command("ffmpeg", args...)
-	cmd.Dir = task.DstDir
+	cmd.Dir = task.DoingDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()

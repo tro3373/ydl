@@ -10,8 +10,10 @@ import (
 )
 
 func main() {
-	workDir := os.Args[1]
-
+	var workDir string
+	if len(os.Args) > 1 {
+		workDir = os.Args[1]
+	}
 	ctx := initializeDir(workDir)
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -38,11 +40,12 @@ func initializeDir(workRootDir string) worker.Ctx {
 		}
 		workRootDir = filepath.Join(filepath.Dir(ex), "work")
 	}
-	queue := createDirIfNotExist(workRootDir, "queue")
 	lib := createDirIfNotExist(workRootDir, "lib")
+	queue := createDirIfNotExist(workRootDir, "queue")
+	doing := createDirIfNotExist(workRootDir, "doing")
 	done := createDirIfNotExist(workRootDir, "done")
 
-	return worker.NewCtx(workRootDir, queue, lib, done)
+	return worker.NewCtx(workRootDir, lib, queue, doing, done)
 }
 
 func createDirIfNotExist(dstRootDir, targetDir string) string {
@@ -58,7 +61,7 @@ func dog(watcher *fsnotify.Watcher, ctx worker.Ctx) {
 		select {
 		case event := <-watcher.Events:
 			// Receive event! fsnotify.Event{Name:"path/to/the/file", Op:0x1}
-			fmt.Printf("Receive event! %#v\n", event)
+			fmt.Printf("Receive event! Name:%s Op:%s\n", event.Name, event.Op.String())
 			if event.Op&fsnotify.Create == fsnotify.Create {
 				worker.Start(ctx, event)
 			}
