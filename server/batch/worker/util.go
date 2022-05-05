@@ -36,3 +36,26 @@ func touch(path string) error {
 	}
 	return nil
 }
+
+func readDir(dir string, fn func(dir, name string) error) error {
+	if !exists(dir) {
+		return nil
+	}
+	f, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	names, err := f.Readdirnames(-1)
+	if err != nil {
+		return err
+	}
+	for _, name := range names {
+		err = fn(dir, name)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

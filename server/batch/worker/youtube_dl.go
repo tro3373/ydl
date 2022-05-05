@@ -28,9 +28,12 @@ func executeYoutubeDl(task *Task) error {
 	key := req.Key()
 
 	args = append(args, "--write-thumbnail")
+	args = append(args, "--write-info-json")
+	// args = append(args, "--write-description")
 	args = append(args, "-o")
 	// format := "%(id)s_%(title)s.%(ext)s"
-	format := "src.%(ext)s"
+	format := "%(title)s.%(ext)s"
+	// format := "src.%(ext)s"
 	dstd := filepath.Join(ctx.DoingDir, key)
 	args = append(args, filepath.Join(dstd, format))
 

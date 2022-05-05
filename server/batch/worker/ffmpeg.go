@@ -55,7 +55,7 @@ func executeFfmpeg(task *Task) error {
 
 	fmt.Println(append([]string{"==> Executing: ffmpeg"}, args...))
 	cmd := exec.Command("ffmpeg", args...)
-	cmd.Dir = task.DoingDir
+	cmd.Dir = task.PathDoingDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()

@@ -14,12 +14,14 @@ import (
 )
 
 type Task struct {
-	Ctx      Ctx
-	Req      *request.Exec
-	DoingDir string
-	DoneDir  string
+	Ctx Ctx
+	Req *request.Exec
 
-	PathReq       string
+	PathDoingDir string
+	PathDoneDir  string
+
+	PathReqJson   string
+	PathInfoJson  string
 	PathThumbnail string
 	PathMovie     string
 	PathAudio     string
@@ -36,17 +38,17 @@ func NewTask(ctx Ctx, jsonPath string) (*Task, error) {
 	task.Req = req
 	key := req.Key()
 
-	task.DoingDir = ctx.GetDoingDir(key)
-	if !exists(task.DoingDir) {
-		os.MkdirAll(task.DoingDir, 0775)
+	task.PathDoingDir = ctx.GetDoingDir(key)
+	if !exists(task.PathDoingDir) {
+		os.MkdirAll(task.PathDoingDir, 0775)
 	}
-	task.DoneDir = ctx.GetDoneDir(key)
-	err = task.findTargetFile(task.DoneDir)
+	task.PathDoneDir = ctx.GetDoneDir(key)
+	err = task.findTargetFile(task.PathDoneDir)
 	if err != nil {
 		return &task, err
 	}
-	task.PathReq = filepath.Join(task.DoingDir, "req.json")
-	err = os.Rename(jsonPath, task.PathReq)
+	task.PathReqJson = filepath.Join(task.PathDoingDir, "req.json")
+	err = os.Rename(jsonPath, task.PathReqJson)
 	if err != nil {
 		return &task, err
 	}
@@ -72,38 +74,40 @@ func (task *Task) readJson(jsonPath string) (*request.Exec, error) {
 }
 
 func (task *Task) findTargetFile(targetDir string) error {
-	if !exists(targetDir) {
-		return nil
-	}
-	f, err := os.Open(targetDir)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
+	return readDir(targetDir, task.readDirHandler)
+}
 
-	names, err := f.Readdirnames(-1)
-	if err != nil {
-		return err
-	}
-	for _, name := range names {
-		fullPath := filepath.Join(targetDir, name)
-		// fmt.Println("==> findTargetFile: handling.. ", fullPath)
-		switch filepath.Ext(name) {
-		case ".json":
-			continue
-		case ".jpg", ".png", ".webp":
-			// fmt.Println("==> findTargetFile: set jpg. ")
-			task.PathThumbnail = fullPath
-		case ".mp3":
-			task.PathAudio = fullPath
-		default:
-			// fmt.Println("==> findTargetFile: set movie. ", task.PathMovie)
-			if len(task.PathMovie) > 0 {
-				continue
-			}
-			task.PathMovie = fullPath
-			task.setPathAudioFromPathMovieIfNeeded()
+func (task Task) readDirHandler(dir, name string) error {
+	fullPath := filepath.Join(dir, name)
+
+	// bytes, err := os.ReadFile(fullPath)
+	// if err != nil {
+	// 	return err
+	// }
+	// mimeType := http.DetectContentType(bytes)
+	// fmt.Println(mimeType) // image/jpeg が出力される
+
+	// fmt.Println("==> findTargetFile: handling.. ", fullPath)
+	switch filepath.Ext(name) {
+	case ".json":
+		if name == "req.json" {
+			task.PathReqJson = fullPath
+		} else if strings.HasSuffix(name, "info.json") {
+			task.PathInfoJson = fullPath
 		}
+		return nil
+	case ".jpg", ".png", ".webp":
+		// fmt.Println("==> findTargetFile: set jpg. ")
+		task.PathThumbnail = fullPath
+	case ".mp3":
+		task.PathAudio = fullPath
+	default:
+		// fmt.Println("==> findTargetFile: set movie. ", task.PathMovie)
+		if len(task.PathMovie) > 0 {
+			return nil
+		}
+		task.PathMovie = fullPath
+		task.setPathAudioFromPathMovieIfNeeded()
 	}
 	return nil
 }
@@ -127,26 +131,14 @@ func (task *Task) HasAudio() bool {
 }
 
 func (task *Task) Done() error {
-	if !exists(task.DoneDir) {
-		return os.Rename(task.DoingDir, task.DoneDir)
+	if !exists(task.PathDoneDir) {
+		return os.Rename(task.PathDoingDir, task.PathDoneDir)
 	}
-	err := task.findTargetFile(task.DoingDir)
-	if err != nil {
-		return err
-	}
-	err = task.RenameDoing2Done(task.PathReq)
-	if err != nil {
-		return err
-	}
-	err = task.RenameDoing2Done(task.PathThumbnail)
-	if err != nil {
-		return err
-	}
-	err = task.RenameDoing2Done(task.PathMovie)
-	if err != nil {
-		return err
-	}
-	return task.RenameDoing2Done(task.PathAudio)
+	return readDir(task.PathDoingDir, task.RenameDoing2DoneHandler)
+}
+
+func (task *Task) RenameDoing2DoneHandler(dir, name string) error {
+	return task.RenameDoing2Done(filepath.Join(dir, name))
 }
 
 func (task *Task) RenameDoing2Done(src string) error {
