@@ -15,7 +15,7 @@ import (
 )
 
 // @see [Go client to github to get latest release and assets for a given repository](https://gist.github.com/metal3d/002e4f0d8545f83c2ace)
-func updateYoutubeDlIfNeeded(ctx Ctx) error {
+func UpdateYoutubeDlIfNeeded(ctx Ctx) error {
 	fmt.Println("==> Start checking", ctx.YoutubeDl, "version..")
 	repo := fmt.Sprintf("ytdl-org/%s", ctx.YoutubeDl)
 	result, err := getGhReleaseLatestTagInfo(repo)

@@ -25,10 +25,6 @@ func Start(ctx Ctx, event fsnotify.Event) {
 }
 
 func startTasks(ctx Ctx) error {
-	err := updateYoutubeDlIfNeeded(ctx)
-	if err != nil {
-		return err
-	}
 	jsons, err := findJsons(ctx.QueueDir)
 	if err != nil {
 		return err

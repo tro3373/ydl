@@ -14,7 +14,7 @@ func main() {
 	if len(os.Args) > 1 {
 		workDir = os.Args[1]
 	}
-	ctx, err := initializeDir(workDir)
+	ctx, err := initialize(workDir)
 	if err != nil {
 		fmt.Println("Initialize Error", err)
 		os.Exit(1)
@@ -36,12 +36,12 @@ func main() {
 	<-done
 }
 
-func initializeDir(workRootDir string) (worker.Ctx, error) {
+func initialize(workRootDir string) (worker.Ctx, error) {
+	var ctx worker.Ctx
 	if len(workRootDir) == 0 {
 		ex, err := os.Executable()
 		if err != nil {
-			fmt.Println("Error", err)
-			os.Exit(1)
+			return ctx, err
 		}
 		workRootDir = filepath.Join(filepath.Dir(ex), "work")
 	}
@@ -50,7 +50,16 @@ func initializeDir(workRootDir string) (worker.Ctx, error) {
 	doing := createDirIfNotExist(workRootDir, "doing")
 	done := createDirIfNotExist(workRootDir, "done")
 
-	return worker.NewCtx(workRootDir, lib, queue, doing, done)
+	ctx, err := worker.NewCtx(workRootDir, lib, queue, doing, done)
+	if err != nil {
+		return ctx, err
+	}
+
+	err = worker.UpdateYoutubeDlIfNeeded(ctx)
+	if err != nil {
+		return ctx, err
+	}
+	return ctx, err
 }
 
 func createDirIfNotExist(dstRootDir, targetDir string) string {
