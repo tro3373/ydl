@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
+	"github.com/tro3373/ydl/cmd/util"
 )
 
 func executeYoutubeDl(task *Task) error {
@@ -16,7 +17,7 @@ func executeYoutubeDl(task *Task) error {
 	// fmt.Println("=============================================================")
 	ctx := task.Ctx
 	req := task.Req
-	logInfo("=> Downloading via", ctx.YoutubeDl, "..")
+	util.LogInfo("=> Downloading via", ctx.YoutubeDl, "..")
 
 	// dir, err := ioutil.TempDir("", "")
 	// if err != nil {

@@ -6,11 +6,12 @@ import (
 	"os/exec"
 
 	"github.com/pkg/errors"
+	"github.com/tro3373/ydl/cmd/util"
 )
 
 func executeFfmpeg(task *Task) error {
 
-	logInfo("Converting mp3 via ffmpeg..")
+	util.LogInfo("Converting mp3 via ffmpeg..")
 
 	// ctx := task.Ctx
 	req := task.Req

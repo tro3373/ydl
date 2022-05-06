@@ -10,7 +10,8 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/tro3373/ydl/batch/request"
+	"github.com/tro3373/ydl/cmd/request"
+	"github.com/tro3373/ydl/cmd/util"
 )
 
 type Task struct {
@@ -39,7 +40,7 @@ func NewTask(ctx Ctx, jsonPath string) (*Task, error) {
 	key := req.Key()
 
 	task.PathDoingDir = ctx.GetDoingDir(key)
-	if !exists(task.PathDoingDir) {
+	if !util.Exists(task.PathDoingDir) {
 		os.MkdirAll(task.PathDoingDir, 0775)
 	}
 	task.PathDoneDir = ctx.GetDoneDir(key)
@@ -74,7 +75,7 @@ func (task *Task) readJson(jsonPath string) (*request.Exec, error) {
 }
 
 func (task *Task) findTargetFile(targetDir string) error {
-	return readDir(targetDir, task.readDirHandler)
+	return util.ReadDir(targetDir, task.readDirHandler)
 }
 
 func (task *Task) readDirHandler(dir, name string) error {
@@ -117,17 +118,17 @@ func (task *Task) setPathAudioFromPathMovieIfNeeded() {
 }
 
 func (task *Task) HasMovie() bool {
-	return len(task.PathMovie) > 0 && exists(task.PathMovie)
+	return len(task.PathMovie) > 0 && util.Exists(task.PathMovie)
 }
 func (task *Task) HasAudio() bool {
-	return len(task.PathAudio) > 0 && exists(task.PathAudio)
+	return len(task.PathAudio) > 0 && util.Exists(task.PathAudio)
 }
 
 func (task *Task) Done() error {
-	if !exists(task.PathDoneDir) {
+	if !util.Exists(task.PathDoneDir) {
 		return os.Rename(task.PathDoingDir, task.PathDoneDir)
 	}
-	return readDir(task.PathDoingDir, task.RenameDoing2DoneHandler)
+	return util.ReadDir(task.PathDoingDir, task.RenameDoing2DoneHandler)
 }
 
 func (task *Task) RenameDoing2DoneHandler(dir, name string) error {

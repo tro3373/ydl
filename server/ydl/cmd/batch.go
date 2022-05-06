@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"fmt"
@@ -6,15 +6,41 @@ import (
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/tro3373/ydl/batch/worker"
+	"github.com/spf13/cobra"
+	"github.com/tro3373/ydl/cmd/worker"
 )
 
-func main() {
-	var workDir string
-	if len(os.Args) > 1 {
-		workDir = os.Args[1]
-	}
-	ctx, err := initialize(workDir)
+// batchCmd represents the batch command
+var batchCmd = &cobra.Command{
+	Use:   "batch",
+	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		StartBatch(args)
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(batchCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// batchCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// batchCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func StartBatch(args []string) {
+	ctx, err := initialize(args)
 	if err != nil {
 		fmt.Println("Initialize Error", err)
 		os.Exit(1)
@@ -36,21 +62,12 @@ func main() {
 	<-done
 }
 
-func initialize(workRootDir string) (worker.Ctx, error) {
-	var ctx worker.Ctx
-	if len(workRootDir) == 0 {
-		ex, err := os.Executable()
-		if err != nil {
-			return ctx, err
-		}
-		workRootDir = filepath.Join(filepath.Dir(ex), "work")
+func initialize(args []string) (worker.Ctx, error) {
+	var workDir string
+	if len(args) > 1 {
+		workDir = args[1]
 	}
-	lib := createDirIfNotExist(workRootDir, "lib")
-	queue := createDirIfNotExist(workRootDir, "queue")
-	doing := createDirIfNotExist(workRootDir, "doing")
-	done := createDirIfNotExist(workRootDir, "done")
-
-	ctx, err := worker.NewCtx(workRootDir, lib, queue, doing, done)
+	ctx, err := worker.NewCtx(workDir)
 	if err != nil {
 		return ctx, err
 	}

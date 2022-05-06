@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path"
+
+	"github.com/tro3373/ydl/cmd/util"
 )
 
 func getTasksRunningFile(ctx Ctx) string {
@@ -11,12 +13,12 @@ func getTasksRunningFile(ctx Ctx) string {
 }
 
 func isTaskRunning(ctx Ctx) bool {
-	return exists(getTasksRunningFile(ctx))
+	return util.Exists(getTasksRunningFile(ctx))
 }
 
 func touchTaskRunning(ctx Ctx) {
 	file := getTasksRunningFile(ctx)
-	if err := touch(file); err != nil {
+	if err := util.Touch(file); err != nil {
 		fmt.Println("Failed to touch", file, err)
 	}
 }

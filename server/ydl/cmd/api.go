@@ -1,26 +1,56 @@
-package main
+package cmd
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
-	"log"
-
 	"github.com/gin-gonic/gin"
-
-	"github.com/tro3373/ydl/api/middleware"
-	"github.com/tro3373/ydl/api/request"
+	"github.com/spf13/cobra"
+	"github.com/tro3373/ydl/cmd/middleware"
+	"github.com/tro3373/ydl/cmd/request"
+	"github.com/tro3373/ydl/cmd/util"
+	"github.com/tro3373/ydl/cmd/worker"
 	"go.uber.org/zap"
 )
 
+// apiCmd represents the api command
+var apiCmd = &cobra.Command{
+	Use:   "api",
+	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		StartApi(args)
+	},
+}
+
 var logger *zap.Logger
 
-func main() {
+func init() {
+	rootCmd.AddCommand(apiCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// apiCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// apiCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func StartApi(args []string) {
 	engine := gin.Default()
 	engine.Use(middleware.RecordUaAndTime)
 	zapLogger, err := zap.NewProduction()
@@ -29,19 +59,15 @@ func main() {
 	}
 	logger = zapLogger
 
-	workd := filepath.Join(".", "work")
-	libd := filepath.Join(workd, "lib")
-
-	queued := filepath.Join(workd, "queue")
-	doned := filepath.Join(workd, "done")
-
-	os.MkdirAll(libd, os.ModePerm)
-	os.MkdirAll(doned, os.ModePerm)
+	ctx, err := worker.NewCtx("")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	engine.GET("/api", func(c *gin.Context) {
 		var key = c.Query("key")
 		logger.Info("[INFO] ==> ", zap.String("key", key))
-		files, err := findJsons(doned, key)
+		files, err := findJsons(ctx.DoneDir, key)
 		if err != nil {
 			logger.Error("[ERROR] ==> Failed to find jsons.", zap.String("Error:", err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
@@ -64,7 +90,7 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"status": "BadRequest"})
 			return
 		}
-		err := saveRequest(queued, req)
+		err := saveRequest(ctx.QueueDir, req)
 		if err != nil {
 			logger.Error("[ERROR] ==> Failed to save request.", zap.String("Error:", err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
@@ -110,7 +136,7 @@ func saveRequest(dstRootDir string, req request.Exec) error {
 	timestamp := time.Now().Format("20060102_150405")
 	req.CreatedAt = timestamp
 
-	if !exists(dstRootDir) {
+	if !util.Exists(dstRootDir) {
 		os.MkdirAll(dstRootDir, os.ModePerm)
 	}
 	dstFile := getJsonPath(dstRootDir, key)
@@ -118,9 +144,4 @@ func saveRequest(dstRootDir string, req request.Exec) error {
 	logger.Info("==> Saving request..", zap.String("dstFile", dstFile))
 	data, _ := json.MarshalIndent(req, "", " ")
 	return ioutil.WriteFile(dstFile, data, 0644)
-}
-
-func exists(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil
 }

@@ -1,4 +1,4 @@
-package worker
+package util
 
 import (
 	"os"
@@ -7,11 +7,11 @@ import (
 	"github.com/fatih/color"
 )
 
-func logInfo(format string, a ...interface{}) {
+func LogInfo(format string, a ...interface{}) {
 	logWrap(color.Green, format, a...)
 }
 
-func logWarn(format string, a ...interface{}) {
+func LogWarn(format string, a ...interface{}) {
 	logWrap(color.Yellow, format, a...)
 }
 
@@ -27,7 +27,7 @@ func logWrap(fn func(format string, a ...interface{}), format string, a ...inter
 	fn(format, a...)
 }
 
-func exists(filename string) bool {
+func Exists(filename string) bool {
 	_, err := os.Stat(filename)
 	return !os.IsNotExist(err)
 }
@@ -41,7 +41,7 @@ func exists(filename string) bool {
 // }
 //
 
-func touch(path string) error {
+func Touch(path string) error {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		file, err := os.Create(path)
@@ -59,8 +59,8 @@ func touch(path string) error {
 	return nil
 }
 
-func readDir(dir string, fn func(dir, name string) error) error {
-	if !exists(dir) {
+func ReadDir(dir string, fn func(dir, name string) error) error {
+	if !Exists(dir) {
 		return nil
 	}
 	f, err := os.Open(dir)

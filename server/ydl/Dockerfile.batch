@@ -1,0 +1,9 @@
+FROM alpine:latest
+
+RUN apk add -q --progress --update --no-cache ffmpeg python3 libc6-compat
+
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+WORKDIR /go/src
+
+ENTRYPOINT ["/bin/sh"]

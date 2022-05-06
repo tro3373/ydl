@@ -5,11 +5,12 @@ import (
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/tro3373/ydl/cmd/util"
 )
 
 func Start(ctx Ctx, event fsnotify.Event) {
 	if isTaskRunning(ctx) {
-		logWarn("=> Already tasks running")
+		util.LogWarn("=> Already tasks running")
 		return
 	}
 	touchTaskRunning(ctx)
@@ -47,7 +48,7 @@ func handleJson(ctx Ctx, jsonPath string) error {
 	if err != nil {
 		return err
 	}
-	logInfo("=> Starting New Task!", task.String())
+	util.LogInfo("=> Starting New Task!", task.String())
 
 	if !task.HasMovie() {
 		err = executeYoutubeDl(task)

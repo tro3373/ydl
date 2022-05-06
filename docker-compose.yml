@@ -55,16 +55,19 @@ services:
     depends_on:
       - api
   api:
-    image: go-air:1.0.0
+    image: ydl-api:1.0.0
     build:
-      context: ./server/api
+      context: ./server/ydl
+      dockerfile: Dockerfile.api
     container_name: api
+    restart: always
     environment:
       - TZ=Asia/Tokyo
     working_dir: /go/src
     volumes:
       - ./server/.data/api:/go/pkg
-      - ./server/api:/go/src
+      - ./server/.data/work:/go/src/work
+      - ./server/ydl:/go/src
     ports:
       - 3000:3000
     tty:
@@ -74,14 +77,22 @@ services:
     # depends_on:
     #   - mongo001
   batch:
-    image: jrottenberg/ffmpeg:latest
+    image: ydl-batch:1.0.0
+    build:
+      context: ./server/ydl
+      dockerfile: Dockerfile.batch
     container_name: batch
+    # restart: always
     environment:
       - TZ=Asia/Tokyo
     working_dir: /go/src
     volumes:
       - ./server/.data/batch:/go/pkg
-      - ./server/batch:/go/src
+      - ./server/.data/work:/go/src/work
+      - ./server/ydl:/go/src
+    entrypoint:
+      - /go/src/ydl
+      - batch
     tty:
       true
   # client:

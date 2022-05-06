@@ -29,4 +29,23 @@ clean:
 
 .PHONY: run
 run:
-	@go run ./main.go $(PWD)/work
+	@go run ./main.go
+.PHONY: runb
+run:
+	@go run ./main.go batch
+
+.PHONY: curl_get
+curl_get:
+	@curl \
+		-fSsL \
+		-H 'Content-Type: application/json' \
+		http://127.0.0.1:3000/api
+
+.PHONY: curl_post
+curl_post:
+	@curl \
+		-fSsL \
+		-X POST \
+		-H 'Content-Type: application/json' \
+		-d@sample.json \
+		http://127.0.0.1:3000/api

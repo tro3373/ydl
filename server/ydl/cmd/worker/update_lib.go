@@ -12,6 +12,7 @@ import (
 	"regexp"
 
 	"github.com/pkg/errors"
+	"github.com/tro3373/ydl/cmd/util"
 )
 
 // @see [Go client to github to get latest release and assets for a given repository](https://gist.github.com/metal3d/002e4f0d8545f83c2ace)
@@ -33,7 +34,7 @@ func UpdateYoutubeDlIfNeeded(ctx Ctx) error {
 	libd := ctx.LibDir
 	dstd := filepath.Join(libd, tag)
 	//  ===> libd:/mnt/data/ghq/github.com/tro3373/ydl/server/batch/work/lib dstd:/mnt/data/ghq/github.com/tro3373/ydl/server/batch/work/lib/2021.12.17.
-	if exists(dstd) {
+	if util.Exists(dstd) {
 		fmt.Printf("===> Already %s exist.\n", dstd)
 		return nil
 	}
@@ -60,7 +61,7 @@ func UpdateYoutubeDlIfNeeded(ctx Ctx) error {
 	}
 
 	dst := filepath.Join(libd, ctx.YoutubeDl)
-	if exists(dst) {
+	if util.Exists(dst) {
 		err := os.Remove(dst)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to Remove %s", dst)
@@ -75,6 +76,7 @@ func UpdateYoutubeDlIfNeeded(ctx Ctx) error {
 	if err != nil {
 		return errors.Wrapf(err, "Failed to chmod %s", src)
 	}
+	src = filepath.Join(tag, ctx.YoutubeDl)
 	err = os.Symlink(src, dst)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to create symlink %s", src)
