@@ -9,7 +9,7 @@ import (
 
 func Start(ctx Ctx, event fsnotify.Event) {
 	if isTaskRunning(ctx) {
-		fmt.Println("=> Already tasks running")
+		logWarn("=> Already tasks running")
 		return
 	}
 	touchTaskRunning(ctx)
@@ -47,9 +47,7 @@ func handleJson(ctx Ctx, jsonPath string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("=============================================================")
-	fmt.Println("=> Start handleJson", task.String())
-	fmt.Println("=============================================================")
+	logInfo("=> Starting New Task!", task.String())
 
 	if !task.HasMovie() {
 		err = executeYoutubeDl(task)

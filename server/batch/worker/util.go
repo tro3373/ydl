@@ -3,7 +3,29 @@ package worker
 import (
 	"os"
 	"time"
+
+	"github.com/fatih/color"
 )
+
+func logInfo(format string, a ...interface{}) {
+	logWrap(color.Green, format, a...)
+}
+
+func logWarn(format string, a ...interface{}) {
+	logWrap(color.Yellow, format, a...)
+}
+
+func logWrap(fn func(format string, a ...interface{}), format string, a ...interface{}) {
+	l := len(a)
+	if l == 0 {
+		fn(format)
+		return
+	}
+	for i := 0; i < l; i++ {
+		format += " %s"
+	}
+	fn(format, a...)
+}
 
 func exists(filename string) bool {
 	_, err := os.Stat(filename)

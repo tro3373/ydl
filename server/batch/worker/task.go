@@ -80,14 +80,7 @@ func (task *Task) findTargetFile(targetDir string) error {
 func (task *Task) readDirHandler(dir, name string) error {
 	fullPath := filepath.Join(dir, name)
 
-	// bytes, err := os.ReadFile(fullPath)
-	// if err != nil {
-	// 	return err
-	// }
-	// mimeType := http.DetectContentType(bytes)
-	// fmt.Println(mimeType) // image/jpeg が出力される
-
-	// fmt.Println("==> findTargetFile: handling.. ", fullPath)
+	fmt.Println("==> readDirHandler: handling.. ", fullPath)
 	switch filepath.Ext(name) {
 	case ".json":
 		if name == "req.json" {
@@ -97,12 +90,12 @@ func (task *Task) readDirHandler(dir, name string) error {
 		}
 		return nil
 	case ".jpg", ".png", ".webp":
-		// fmt.Println("==> findTargetFile: set jpg. ")
+		fmt.Println("==> readDirHandler: set jpg. ")
 		task.PathThumbnail = fullPath
 	case ".mp3":
 		task.PathAudio = fullPath
 	default:
-		// fmt.Println("==> findTargetFile: set movie. ", task.PathMovie)
+		fmt.Println("==> readDirHandler: set movie. ", task.PathMovie)
 		if len(task.PathMovie) > 0 {
 			return nil
 		}
@@ -142,6 +135,7 @@ func (task *Task) RenameDoing2DoneHandler(dir, name string) error {
 }
 
 func (task *Task) RenameDoing2Done(src string) error {
+	// logWarn("Renaming", src, "...")
 	if len(src) == 0 {
 		return nil
 	}

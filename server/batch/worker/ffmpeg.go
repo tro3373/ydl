@@ -10,10 +10,7 @@ import (
 
 func executeFfmpeg(task *Task) error {
 
-	// fmt.Println("=============================================================")
-	// fmt.Println("=> Start executeFfmpeg", task.String())
-	// fmt.Println("=============================================================")
-	fmt.Println("=> Converting mp3 via ffmpeg..")
+	logInfo("Converting mp3 via ffmpeg..")
 
 	// ctx := task.Ctx
 	req := task.Req

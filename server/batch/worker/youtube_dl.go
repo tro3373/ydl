@@ -16,7 +16,7 @@ func executeYoutubeDl(task *Task) error {
 	// fmt.Println("=============================================================")
 	ctx := task.Ctx
 	req := task.Req
-	fmt.Println("=> Downloading via", ctx.YoutubeDl, "..")
+	logInfo("=> Downloading via", ctx.YoutubeDl, "..")
 
 	// dir, err := ioutil.TempDir("", "")
 	// if err != nil {
