@@ -77,7 +77,7 @@ func (task *Task) findTargetFile(targetDir string) error {
 	return readDir(targetDir, task.readDirHandler)
 }
 
-func (task Task) readDirHandler(dir, name string) error {
+func (task *Task) readDirHandler(dir, name string) error {
 	fullPath := filepath.Join(dir, name)
 
 	// bytes, err := os.ReadFile(fullPath)
