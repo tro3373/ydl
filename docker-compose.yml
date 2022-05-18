@@ -43,7 +43,7 @@ services:
     restart: always
     ports:
       - 80:80
-      - 443:443
+      # - 443:443
     environment:
       TZ: Asia/Tokyo
     volumes:
@@ -95,19 +95,19 @@ services:
       - batch
     tty:
       true
-  # client:
-  #   image: node:15.6.0-alpine3.10
-  #   # build:
-  #   #   context: ./client/back
-  #   container_name: client
-  #   restart: always
-  #   environment:
-  #     TZ: Asia/Tokyo
-  #   working_dir: /src
-  #   volumes:
-  #     - ./client/back:/src
-  #   ports:
-  #     - 8080:8080
-  #   command: yarn serve
-  #   depends_on:
-  #     - api
+  client:
+    image: node:15.6.0-alpine3.10
+    # build:
+    #   context: ./client/back
+    container_name: client
+    restart: always
+    environment:
+      TZ: Asia/Tokyo
+    working_dir: /src
+    volumes:
+      - ./client/back:/src
+    ports:
+      - 8080:8080
+    command: yarn serve
+    depends_on:
+      - api

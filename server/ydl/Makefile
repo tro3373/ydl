@@ -31,7 +31,7 @@ clean:
 run:
 	@go run ./main.go
 .PHONY: runb
-run:
+runb:
 	@go run ./main.go batch
 
 .PHONY: curl_get

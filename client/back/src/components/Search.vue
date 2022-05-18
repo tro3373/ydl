@@ -141,10 +141,14 @@ export default {
     },
     async submit() {
       this.loader = 'loading';
-      if (this.isValidId) {
-        localStorage.setItem(LOCAL_STRAGE_KEY_PREV_ID, this.youtubeId);
-        await client.list();
+      if (!this.isValidId) {
+        return;
       }
+      localStorage.setItem(LOCAL_STRAGE_KEY_PREV_ID, this.youtubeId);
+      // const res = await client.list();
+      // console.log({ res });
+      const res = await client.download({ url: this.youtubeId });
+      console.log({ res });
     },
   },
 };

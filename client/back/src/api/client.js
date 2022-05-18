@@ -8,6 +8,10 @@ const ENDPOINT = {
     url: `${Const.API_PREFIX}`,
     method: 'get',
   },
+  DL_REQUEST: {
+    url: `${Const.API_PREFIX}`,
+    method: 'post',
+  },
 };
 
 const ApiClient = class ApiClient extends BaseClient {
@@ -19,6 +23,14 @@ const ApiClient = class ApiClient extends BaseClient {
     const res = await super.request({
       ...ENDPOINT.LIST,
       params,
+    });
+    return res.data;
+  }
+
+  async download(params) {
+    const res = await super.request({
+      ...ENDPOINT.DL_REQUEST,
+      data: params,
     });
     return res.data;
   }

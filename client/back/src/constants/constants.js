@@ -3,10 +3,10 @@
 const CommonConstants = {};
 const EnvConstants = {
   dev: {
-    API_PREFIX: 'http://192.168.33.10',
+    API_PREFIX: 'http://localhost/api',
   },
   prd: {
-    API_PREFIX: 'https://5hsnc6y80l.execute-api.ap-northeast-1.amazonaws.com/prd',
+    API_PREFIX: 'https://ydl.chillfixx.work/api',
   },
 };
 

@@ -5,11 +5,6 @@ CONTAINER_ngx=nginx
 # CONTAINER_db2=mongo002
 # CONTAINER_db3=mongo003
 
-# all_container=$$(docker ps -a -q)
-# active_container=$$(docker ps -q)
-# images=$$(docker images | awk '/^<none>/ { print $$3 }')
-# local_ip=$$(ip route |awk 'END {print $$NF}')
-
 #.PHONY: all test clean
 #default: build
 .DEFAULT_GOAL := up
