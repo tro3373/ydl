@@ -16,9 +16,6 @@ build-image: build
 
 up: start logsf
 start:
-	if [[  -e ./server/ydl/work ]]; then \
-		sudo rm -rf ./server/ydl/work; \
-	fi && \
 	if [[ ! -e ./server/ydl/ydl ]]; then \
 		$(MAKE) build; \
 	fi && docker-compose up -d
