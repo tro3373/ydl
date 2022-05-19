@@ -18,21 +18,9 @@ type Ctx struct {
 }
 
 func NewCtx(args []string) (Ctx, error) {
-	var workDir string
-	if len(args) > 0 {
-		abs, err := filepath.Abs(args[0])
-		if err != nil {
-			return Ctx{}, err
-		}
-		workDir = abs
-	}
-	if len(workDir) == 0 {
-		// ex, err := os.Executable()
-		dir, err := os.Getwd()
-		if err != nil {
-			return Ctx{}, err
-		}
-		workDir = filepath.Join(filepath.Dir(dir), "work")
+	workDir, err := chooseWorkDir(args)
+	if err != nil {
+		return Ctx{}, err
 	}
 	ctx := Ctx{
 		WorkDir:   createDirIfNotExist(workDir, ""),
@@ -42,8 +30,23 @@ func NewCtx(args []string) (Ctx, error) {
 		DoneDir:   createDirIfNotExist(workDir, "done"),
 		YoutubeDl: "youtube-dl",
 	}
-	err := ctx.Clean()
+	err = ctx.Clean()
 	return ctx, err
+}
+
+func chooseWorkDir(args []string) (string, error) {
+	var dir string
+	if len(args) > 0 {
+		dir = args[0]
+	}
+	if len(dir) == 0 {
+		currentDir, err := os.Getwd()
+		if err != nil {
+			return currentDir, err
+		}
+		dir = filepath.Join(currentDir, "work")
+	}
+	return filepath.Abs(dir)
 }
 
 func createDirIfNotExist(targetDirPath, subDir string) string {

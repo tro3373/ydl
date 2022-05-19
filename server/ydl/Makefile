@@ -29,10 +29,7 @@ clean:
 
 .PHONY: run
 run:
-	@go run ./main.go ./work
-.PHONY: runb
-runb:
-	@go run ./main.go batch
+	@go run ./main.go
 
 .PHONY: curl_get
 curl_get:

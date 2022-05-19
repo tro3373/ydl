@@ -26,6 +26,7 @@ to quickly create a Cobra application.`,
 			fmt.Println("Failed to new ctx Error", err)
 			os.Exit(1)
 		}
+		fmt.Println("==> Using", ctx.WorkDir, "as work directory.")
 		go StartBatch(ctx)
 		StartApi(ctx)
 	},
