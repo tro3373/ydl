@@ -29,7 +29,7 @@ clean:
 
 .PHONY: run
 run:
-	@go run ./main.go
+	@go run ./main.go ./work
 .PHONY: runb
 runb:
 	@go run ./main.go batch

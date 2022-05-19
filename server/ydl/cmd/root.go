@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/tro3373/ydl/cmd/worker"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -19,7 +21,13 @@ to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		apiCmd.Run(cmd, args)
+		ctx, err := worker.NewCtx(args)
+		if err != nil {
+			fmt.Println("Failed to new ctx Error", err)
+			os.Exit(1)
+		}
+		go StartBatch(ctx)
+		StartApi(ctx)
 	},
 }
 

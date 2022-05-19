@@ -17,13 +17,22 @@ type Ctx struct {
 	YoutubeDl string
 }
 
-func NewCtx(workDir string) (Ctx, error) {
-	if len(workDir) == 0 {
-		ex, err := os.Executable()
+func NewCtx(args []string) (Ctx, error) {
+	var workDir string
+	if len(args) > 0 {
+		abs, err := filepath.Abs(args[0])
 		if err != nil {
 			return Ctx{}, err
 		}
-		workDir = filepath.Join(filepath.Dir(ex), "work")
+		workDir = abs
+	}
+	if len(workDir) == 0 {
+		// ex, err := os.Executable()
+		dir, err := os.Getwd()
+		if err != nil {
+			return Ctx{}, err
+		}
+		workDir = filepath.Join(filepath.Dir(dir), "work")
 	}
 	ctx := Ctx{
 		WorkDir:   createDirIfNotExist(workDir, ""),
