@@ -21,7 +21,7 @@ build:
 	@env GOOS=linux go build -ldflags="-s -w"
 .PHONY: build-image
 build-image:
-	@$(MAKE) -f ../../Makefile build
+	@$(MAKE) -f ../../Makefile build-image app
 
 .PHONY: clean
 clean:
@@ -29,6 +29,10 @@ clean:
 
 .PHONY: run
 run:
+	@go run ./main.go
+
+.PHONY: air
+air:
 	@go run ./main.go
 
 .PHONY: curl_get

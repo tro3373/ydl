@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  nginx:
+    image: nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - 80:80
+      # - 443:443
+    environment:
+      TZ: Asia/Tokyo
+    volumes:
+      - ./server/nginx/conf.d/app.dev.conf:/etc/nginx/conf.d/default.conf
+      - ./server/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./server/nginx/proxy.conf:/etc/nginx/proxy.conf
+      - ./server/nginx/mime.types:/etc/nginx/conf/mime.types
+    # links:
+    #   - app
+    depends_on:
+      - app
+  app:
+    image: ydl-dev:1.0.0
+    build:
+      context: ./server/ydl
+      dockerfile: Dockerfile.dev
+    container_name: ydl-dev
+    restart: always
+    environment:
+      - TZ=Asia/Tokyo
+    working_dir: /root
+    volumes:
+      - ./server/.data/work:/root/work
+    ports:
+      - 3000:3000
+    tty:
+      true
+  client:
+    image: node:15.6.0-alpine3.10
+    # build:
+    #   context: ./client/back
+    container_name: client
+    restart: always
+    environment:
+      TZ: Asia/Tokyo
+    working_dir: /src
+    volumes:
+      - ./client/back:/src
+    ports:
+      - 8080:8080
+    command: yarn serve
+    depends_on:
+      - app

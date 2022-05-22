@@ -1,46 +1,40 @@
-CONTAINER_api=api
-CONTAINER_batch=batch
+CONTAINER_ydl=ydl
 CONTAINER_ngx=nginx
-# CONTAINER_db1=mongo001
-# CONTAINER_db2=mongo002
-# CONTAINER_db3=mongo003
+STAGE=dev
+arg=
 
 #.PHONY: all test clean
-#default: build
 .DEFAULT_GOAL := up
 
-build:
+build-ydl:
 	@cd ./server/ydl && $(MAKE) build
+build_if_needed:
+	([[ ! -e ./server/ydl/ydl ]] || $(MAKE) build-ydl); \
+		$(MAKE) build-ydl
+build-client:
+	@cd ./client/back && $(MAKE) build
+build: build-ydl build-client
+
 build-image: build
-	@docker-compose build
+	@docker-compose -f docker-compose.$(STAGE).yml build $(arg)
 
 up: start logsf
-start:
-	if [[ ! -e ./server/ydl/ydl ]]; then \
-		$(MAKE) build; \
-	fi && docker-compose up -d
+start: build_if_needed
+	docker-compose -f docker-compose.$(STAGE).yml up -d $(arg)
 stop: down
 down:
-	docker-compose down
-restart: stop start
+	docker-compose -f docker-compose.$(STAGE).yml down $(arg)
+restart:
+	docker-compose -f docker-compose.$(STAGE).yml restart $(arg)
+
 logs:
-	docker-compose logs
+	docker-compose -f docker-compose.$(STAGE).yml logs
 logsf:
-	docker-compose logs -f
+	docker-compose -f docker-compose.$(STAGE).yml logs -f
 
 console:
-	docker exec -it $(CONTAINER_api) /bin/sh --login
-console_batch:
-	docker exec -it $(CONTAINER_batch) /bin/sh --login
+	docker exec -it $(CONTAINER_ydl) /bin/sh --login
 console_nginx:
 	docker exec -it $(CONTAINER_ngx) /bin/bash --login
-# console_db1:
-# 	docker exec -it $(CONTAINER_db1) /bin/bash --login
-# console_db2:
-# 	docker exec -it $(CONTAINER_db2) /bin/bash --login
-# console_db3:
-# 	docker exec -it $(CONTAINER_db3) /bin/bash --login
-# rs:
-# 	docker exec -it $(CONTAINER_db1) /setup_rs
-# do:
-# 	docker exec -it $(CONTAINER_api) /go/src
+reload:
+	docker exec -it $(CONTAINER_ngx) nginx -s reload
