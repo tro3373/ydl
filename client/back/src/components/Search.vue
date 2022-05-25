@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row class="text-center">
-      <v-col cols="12">
+      <v-col cols="3">
         <v-card>
           <v-progress-linear
             :active="loading"
@@ -67,22 +67,76 @@
           </v-card-actions>
         </v-card>
       </v-col>
+
+      <v-col cols="8">
+        <v-card>
+          <v-toolbar color="primary" dark>
+            <!-- <v-app-bar-nav-icon></v-app-bar-nav-icon> -->
+            <v-toolbar-title>Files</v-toolbar-title>
+            <!-- <v-spacer></v-spacer> -->
+            <!-- <v-btn icon>                   -->
+            <!--   <v-icon>mdi-magnify</v-icon> -->
+            <!-- </v-btn>                       -->
+
+            <!-- <v-btn icon>                       -->
+            <!--   <v-icon>mdi-view-module</v-icon> -->
+            <!-- </v-btn>                           -->
+          </v-toolbar>
+
+          <v-list subheader two-line>
+            <v-subheader inset>Folders</v-subheader>
+            <v-list-item v-for="done in doneList" :key="done.url">
+              <v-list-item-avatar>
+                <v-icon class="grey lighten-1" dark>
+                  mdi-folder
+                </v-icon>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title v-text="done.tag.title"></v-list-item-title>
+                <v-list-item-subtitle v-text="done.tag.artist"></v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-btn icon>
+                  <v-icon color="grey lighten-1">mdi-information</v-icon>
+                </v-btn>
+              </v-list-item-action>
+            </v-list-item>
+            <v-divider inset></v-divider>
+            <v-subheader inset>Files</v-subheader>
+            <v-list-item v-for="file in files" :key="file.title">
+              <v-list-item-avatar>
+                <v-icon :class="file.color" dark v-text="file.icon"></v-icon>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title v-text="file.title"></v-list-item-title>
+                <v-list-item-subtitle v-text="file.subtitle"></v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-btn icon>
+                  <v-icon color="grey lighten-1">mdi-information</v-icon>
+                </v-btn>
+              </v-list-item-action>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex';
 import _ from 'lodash';
 import qs from 'query-string';
 import Player from '@/components/Player.vue';
 import client from '@/api/client.js';
+const { mapActions: mapActionsDone, mapGetters: mapGettersDone } = createNamespacedHelpers('done');
 const LOCAL_STRAGE_KEY_PREV_ID = 'local_strage_key_prev_id';
 export default {
   name: 'Search',
   components: {
     Player,
   },
-
   watch: {
     loader() {
       const l = this.loader;
@@ -91,7 +145,6 @@ export default {
       this.loader = null;
     },
   },
-
   data() {
     return {
       url: localStorage.getItem(LOCAL_STRAGE_KEY_PREV_ID) || '',
@@ -109,6 +162,7 @@ export default {
     };
   },
   computed: {
+    ...mapGettersDone(['doneList']),
     youtubeId() {
       const val = this.url;
       if (_.isEmpty(val)) return '';
@@ -133,7 +187,11 @@ export default {
       return `https://www.youtube.com/embed/${this.youtubeId}`;
     },
   },
+  async mounted() {
+    await this.getDone();
+  },
   methods: {
+    ...mapActionsDone(['getDone']),
     validate(id) {
       const _id = '' + id;
       const res = _id.match(/^[a-zA-Z0-9_-]{11}$/);

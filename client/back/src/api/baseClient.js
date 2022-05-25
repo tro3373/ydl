@@ -55,7 +55,7 @@ export default class BaseClient {
       console.info('>>> Requested. status:', res.status);
       this._debug(`>>> Status: ${res.status} Params:`, params, 'Response:', res.data);
       // this._debug('>>> Response:', res.data);
-      // this._debug(`>>> res:`, res);
+      this._debug(`>>> res:`, res);
       return res;
     } catch (e) {
       console.error(`>>> Failed to Request. ${params.url}`, params, e);

@@ -1,14 +1,9 @@
 'use strict';
 
-const CommonConstants = {};
-const EnvConstants = {
-  dev: {
-    API_PREFIX: 'http://localhost/api',
-  },
-  prd: {
-    API_PREFIX: 'https://ydl.chillfixx.work/api',
-  },
+const CommonConstants = {
+  API_PREFIX: process.env.VUE_APP_API_PREFIX,
 };
+const EnvConstants = {};
 
 const genConstants = () => {
   const env = process.env.VUE_APP_STAGE || 'dev';
