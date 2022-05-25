@@ -27,9 +27,11 @@ services:
     restart: always
     environment:
       - TZ=Asia/Tokyo
-    working_dir: /root
+    working_dir: /go/src
     volumes:
-      - ./server/.data/work:/root/work
+      - ./server/ydl:/go/src
+      - ./server/.data/work:/go/src/work
+      - ./server/.data/ydl:/go/pkg
     ports:
       - 3000:3000
     tty:

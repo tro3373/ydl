@@ -24,7 +24,7 @@ services:
     build:
       context: ./server/ydl
       dockerfile: Dockerfile
-    container_name: ydl
+    container_name: ydl-prd
     restart: always
     environment:
       - TZ=Asia/Tokyo

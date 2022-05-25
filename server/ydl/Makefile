@@ -8,6 +8,11 @@ version := v0.0.1
 
 .DEFAULT_GOAL := run
 
+depends_cmds := go
+.PHONY: check
+check:
+	@for cmd in ${depends_cmds}; do command -v $$cmd >&/dev/null || (echo "No $$cmd command" && exit 1); done
+
 .PHONY: deps
 deps:
 	@go list -m all
@@ -17,7 +22,7 @@ tidy:
 	@go mod tidy
 
 .PHONY: build
-build:
+build: check
 	@env GOOS=linux go build -ldflags="-s -w"
 .PHONY: build-image
 build-image:
