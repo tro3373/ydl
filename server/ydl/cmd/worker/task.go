@@ -15,17 +15,15 @@ import (
 )
 
 type Task struct {
-	Ctx Ctx
-	Req *request.Exec
-
-	PathDoingDir string
-	PathDoneDir  string
-
-	PathReqJson   string
-	PathInfoJson  string
-	PathThumbnail string
-	PathMovie     string
-	PathAudio     string
+	Ctx           Ctx           `json:"ctx"`
+	Req           *request.Exec `json:"req"`
+	PathDoingDir  string        `json:"pathDoingDir"`
+	PathDoneDir   string        `json:"pathDoneDir"`
+	PathReqJson   string        `json:"pathReqJson"`
+	PathInfoJson  string        `json:"pathInfoJson"`
+	PathThumbnail string        `json:"pathThumbnail"`
+	PathMovie     string        `json:"pathMovie"`
+	PathAudio     string        `json:"pathAudio"`
 }
 
 func NewTask(ctx Ctx, jsonPath string) (*Task, error) {
@@ -125,10 +123,20 @@ func (task *Task) HasAudio() bool {
 }
 
 func (task *Task) Done() error {
+	task.save()
 	if !util.Exists(task.PathDoneDir) {
 		return os.Rename(task.PathDoingDir, task.PathDoneDir)
 	}
 	return util.ReadDir(task.PathDoingDir, task.RenameDoing2DoneHandler)
+}
+
+func (task *Task) save() error {
+	data, err := json.MarshalIndent(task, "", "  ")
+	if err != nil {
+		return err
+	}
+	dst := filepath.Join(task.PathDoingDir, "task.json")
+	return ioutil.WriteFile(dst, data, 0644)
 }
 
 func (task *Task) RenameDoing2DoneHandler(dir, name string) error {

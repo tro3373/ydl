@@ -9,12 +9,12 @@ import (
 )
 
 type Ctx struct {
-	WorkDir   string
-	LibDir    string
-	QueueDir  string
-	DoingDir  string
-	DoneDir   string
-	YoutubeDl string
+	WorkDir   string `json:"workDir"`
+	LibDir    string `json:"libDir"`
+	QueueDir  string `json:"queueDir"`
+	DoingDir  string `json:"doingDir"`
+	DoneDir   string `json:"doneDir"`
+	YoutubeDl string `json:"youtubeDl"`
 }
 
 func NewCtx(args []string) (Ctx, error) {
