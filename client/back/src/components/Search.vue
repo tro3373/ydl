@@ -42,12 +42,23 @@
 
           <v-divider></v-divider>
 
+          <v-card-text>
+            <v-text-field v-model="title" :rules="rules.title" label="タイトル" clearable>
+            </v-text-field>
+            <v-text-field v-model="artist" :rules="rules.artist" label="アーティスト" clearable>
+            </v-text-field>
+            <v-text-field v-model="album" :rules="rules.album" label="アルバム" clearable>
+            </v-text-field>
+            <v-text-field v-model="genre" :rules="rules.genre" label="ジャンル" clearable>
+            </v-text-field>
+          </v-card-text>
+
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-radio-group v-model="type" row>
-              <v-radio label="mp3" value="mp3"></v-radio>
-              <v-radio label="mp4" value="mp4"></v-radio>
-            </v-radio-group>
+            <!-- <v-radio-group v-model="type" row>            -->
+            <!--   <v-radio label="mp3" value="mp3"></v-radio> -->
+            <!--   <v-radio label="mp4" value="mp4"></v-radio> -->
+            <!-- </v-radio-group>                              -->
             <!-- elevation="4" -->
             <v-btn
               class="ma-2"
@@ -83,8 +94,9 @@
             <!-- </v-btn>                           -->
           </v-toolbar>
 
-          <v-list subheader two-line>
-            <v-subheader inset>Folders</v-subheader>
+          <!-- <v-list subheader two-line> -->
+          <v-list two-line>
+            <!-- <v-subheader inset>Folders</v-subheader> -->
             <v-list-item v-for="done in doneList" :key="done.url">
               <v-list-item-avatar>
                 <v-icon class="grey lighten-1" dark>
@@ -101,22 +113,22 @@
                 </v-btn>
               </v-list-item-action>
             </v-list-item>
-            <v-divider inset></v-divider>
-            <v-subheader inset>Files</v-subheader>
-            <v-list-item v-for="file in files" :key="file.title">
-              <v-list-item-avatar>
-                <v-icon :class="file.color" dark v-text="file.icon"></v-icon>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title v-text="file.title"></v-list-item-title>
-                <v-list-item-subtitle v-text="file.subtitle"></v-list-item-subtitle>
-              </v-list-item-content>
-              <v-list-item-action>
-                <v-btn icon>
-                  <v-icon color="grey lighten-1">mdi-information</v-icon>
-                </v-btn>
-              </v-list-item-action>
-            </v-list-item>
+            <!-- <v-divider inset></v-divider>                                            -->
+            <!-- <v-subheader inset>Files</v-subheader>                                   -->
+            <!-- <v-list-item v-for="file in files" :key="file.title">                    -->
+            <!--   <v-list-item-avatar>                                                   -->
+            <!--     <v-icon :class="file.color" dark v-text="file.icon"></v-icon>        -->
+            <!--   </v-list-item-avatar>                                                  -->
+            <!--   <v-list-item-content>                                                  -->
+            <!--     <v-list-item-title v-text="file.title"></v-list-item-title>          -->
+            <!--     <v-list-item-subtitle v-text="file.subtitle"></v-list-item-subtitle> -->
+            <!--   </v-list-item-content>                                                 -->
+            <!--   <v-list-item-action>                                                   -->
+            <!--     <v-btn icon>                                                         -->
+            <!--       <v-icon color="grey lighten-1">mdi-information</v-icon>            -->
+            <!--     </v-btn>                                                             -->
+            <!--   </v-list-item-action>                                                  -->
+            <!-- </v-list-item>                                                           -->
           </v-list>
         </v-card>
       </v-col>
@@ -131,7 +143,7 @@ import qs from 'query-string';
 import Player from '@/components/Player.vue';
 import client from '@/api/client.js';
 const { mapActions: mapActionsDone, mapGetters: mapGettersDone } = createNamespacedHelpers('done');
-const LOCAL_STRAGE_KEY_PREV_ID = 'local_strage_key_prev_id';
+const LOCAL_STRAGE_KEY_CACHE = 'local_strage_key_cache';
 export default {
   name: 'Search',
   components: {
@@ -144,10 +156,31 @@ export default {
       setTimeout(() => (this[l] = false), 3000);
       this.loader = null;
     },
+    inputCache() {
+      const data = {
+        url: this.url,
+        title: this.title,
+        artist: this.artist,
+        album: this.album,
+        genre: this.genre,
+      };
+      console.debug('==> Caching to local storage..', data);
+      localStorage.setItem(LOCAL_STRAGE_KEY_CACHE, JSON.stringify(data));
+    },
   },
   data() {
+    const inputInit = {
+      url: '',
+      title: '',
+      artist: '',
+      album: '',
+      genre: '',
+    };
+    const input = JSON.parse(
+      localStorage.getItem(LOCAL_STRAGE_KEY_CACHE) || JSON.stringify(inputInit)
+    );
     return {
-      url: localStorage.getItem(LOCAL_STRAGE_KEY_PREV_ID) || '',
+      ...input,
       rules: {
         url: [
           () => {
@@ -156,7 +189,7 @@ export default {
           },
         ],
       },
-      type: 'mp3',
+      // type: 'mp3',
       loader: null,
       loading: false,
     };
@@ -186,6 +219,9 @@ export default {
       }
       return `https://www.youtube.com/embed/${this.youtubeId}`;
     },
+    inputCache() {
+      return `${this.url}${this.title}${this.artist}${this.album}${this.genre}`;
+    },
   },
   async mounted() {
     await this.getDone();
@@ -202,10 +238,17 @@ export default {
       if (!this.isValidId) {
         return;
       }
-      localStorage.setItem(LOCAL_STRAGE_KEY_PREV_ID, this.youtubeId);
       // const res = await client.list();
       // console.log({ res });
-      const res = await client.download({ url: this.youtubeId });
+      const res = await client.download({
+        url: this.youtubeId,
+        tag: {
+          title: this.title,
+          artist: this.artist,
+          album: this.album,
+          genre: this.genre,
+        },
+      });
       console.log({ res });
     },
   },

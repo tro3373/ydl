@@ -23,9 +23,16 @@ func touchTaskRunning(ctx Ctx) {
 	}
 }
 
-func rmTakRunning(ctx Ctx) {
+func rmTaskRunning(ctx Ctx) {
 	file := getTasksRunningFile(ctx)
 	if err := os.Remove(file); err != nil {
 		fmt.Println("Failed to remove", file, err)
 	}
+}
+
+func cleanTaskRunning(ctx Ctx) {
+	if !isTaskRunning(ctx) {
+		return
+	}
+	rmTaskRunning(ctx)
 }

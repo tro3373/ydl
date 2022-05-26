@@ -37,12 +37,16 @@ func NewTask(ctx Ctx, jsonPath string) (*Task, error) {
 	task.Req = req
 	key := req.Key()
 
+	task.PathDoneDir = ctx.GetDoneDir(key)
+	findTargetDir := task.PathDoneDir
+
 	task.PathDoingDir = ctx.GetDoingDir(key)
-	if !util.Exists(task.PathDoingDir) {
+	if util.Exists(task.PathDoingDir) {
+		findTargetDir = task.PathDoneDir
+	} else {
 		os.MkdirAll(task.PathDoingDir, 0775)
 	}
-	task.PathDoneDir = ctx.GetDoneDir(key)
-	err = task.findTargetFile(task.PathDoneDir)
+	err = task.findTargetFile(findTargetDir)
 	if err != nil {
 		return &task, err
 	}
@@ -73,7 +77,9 @@ func (task *Task) readJson(jsonPath string) (*request.Exec, error) {
 }
 
 func (task *Task) findTargetFile(targetDir string) error {
-	return util.ReadDir(targetDir, task.readDirHandler)
+	err := util.ReadDir(targetDir, task.readDirHandler)
+	task.genTitleFromInfoIfEnable()
+	return err
 }
 
 func (task *Task) readDirHandler(dir, name string) error {
@@ -113,6 +119,27 @@ func (task *Task) setPathAudioFromPathMovieIfNeeded() {
 	ext := filepath.Ext(movie)
 	name := filepath.Base(movie[:len(movie)-len(ext)])
 	task.PathAudio = filepath.Join(dir, name) + ".mp3"
+}
+
+func (task *Task) genTitleFromInfoIfEnable() {
+	if len(task.PathInfoJson) == 0 {
+		return
+	}
+	dir := filepath.Dir(task.PathInfoJson)
+	matches, _ := filepath.Glob(filepath.Join(dir, "*.title"))
+	if len(matches) > 0 {
+		return
+	}
+	raw, err := ioutil.ReadFile(task.PathInfoJson)
+	if err != nil {
+		fmt.Println("Failed to read info json.", task.PathInfoJson, err)
+		return
+	}
+	var info interface{}
+	json.Unmarshal(raw, &info)
+	m := info.(map[string]interface{})
+	title := m["title"].(string)
+	util.Touch(filepath.Join(dir, title+".title"))
 }
 
 func (task *Task) HasMovie() bool {

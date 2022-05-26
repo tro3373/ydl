@@ -60,6 +60,9 @@ func Touch(path string) error {
 }
 
 func ReadDir(dir string, fn func(dir, name string) error) error {
+	if len(dir) == 0 {
+		return nil
+	}
 	if !Exists(dir) {
 		return nil
 	}

@@ -16,7 +16,7 @@ func Start(ctx Ctx, event fsnotify.Event) {
 	touchTaskRunning(ctx)
 	msgs := []interface{}{"Success to execute tasks!"}
 	defer func() {
-		rmTakRunning(ctx)
+		rmTaskRunning(ctx)
 		fmt.Println(msgs...)
 	}()
 	err := startTasks(ctx)
@@ -51,13 +51,13 @@ func handleJson(ctx Ctx, jsonPath string) error {
 	util.LogInfo("=> Starting New Task!", task.String())
 
 	if !task.HasMovie() {
-		err = executeYoutubeDl(task)
+		err = startYoutubeDl(task)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = executeFfmpeg(task)
+	err = startFfmpeg(task)
 	if err != nil {
 		return err
 	}

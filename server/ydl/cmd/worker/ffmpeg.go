@@ -9,7 +9,7 @@ import (
 	"github.com/tro3373/ydl/cmd/util"
 )
 
-func executeFfmpeg(task *Task) error {
+func startFfmpeg(task *Task) error {
 
 	util.LogInfo("Converting mp3 via ffmpeg..")
 

@@ -10,31 +10,36 @@ import (
 	"github.com/tro3373/ydl/cmd/util"
 )
 
-func executeYoutubeDl(task *Task) error {
+func startYoutubeDl(task *Task) error {
 
-	// fmt.Println("=============================================================")
-	// fmt.Println("=> Start executeYoutubeDl", task.String())
-	// fmt.Println("=============================================================")
+	util.LogInfo("=> Downloading via youtube-dl..")
+	cmd, dstd := buildCmd(task)
+	fmt.Println("==> Executing: ", cmd.String())
+
+	err := runWithRetry(cmd, dstd)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to executeYoutubeDl %s", err)
+	}
+	err = task.findTargetFile(dstd)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func buildCmd(task *Task) (*exec.Cmd, string) {
 	ctx := task.Ctx
 	req := task.Req
-	util.LogInfo("=> Downloading via", ctx.YoutubeDl, "..")
-
-	// dir, err := ioutil.TempDir("", "")
-	// if err != nil {
-	// 	return err
-	// }
-	// defer os.RemoveAll(dir)
-
-	var args []string
 	key := req.Key()
 
+	var args []string
 	args = append(args, "--write-thumbnail")
 	args = append(args, "--write-info-json")
 	// args = append(args, "--write-description")
 	args = append(args, "-o")
 	// format := "%(id)s_%(title)s.%(ext)s"
-	format := "%(title)s.%(ext)s"
-	// format := "src.%(ext)s"
+	// format := "%(title)s.%(ext)s"
+	format := "src.%(ext)s"
 	dstd := filepath.Join(ctx.DoingDir, key)
 	args = append(args, filepath.Join(dstd, format))
 
@@ -45,19 +50,29 @@ func executeYoutubeDl(task *Task) error {
 
 	args = append(args, key)
 
-	fmt.Println(append([]string{"==> Executing: ", filepath.Join(ctx.LibDir, ctx.YoutubeDl)}, args...))
-	cmd := exec.Command(filepath.Join(ctx.LibDir, ctx.YoutubeDl), args...)
+	absYoutubeDl := filepath.Join(ctx.LibDir, ctx.YoutubeDl)
+	cmd := exec.Command(absYoutubeDl, args...)
 	cmd.Dir = dstd
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	return cmd, dstd
+}
 
-	err := cmd.Run()
-	if err != nil {
-		return errors.Wrapf(err, "Failed to executeYoutubeDl %s", err)
+func runWithRetry(cmd *exec.Cmd, dstd string) error {
+	fmt.Println("==> Executing: ", cmd.String())
+	max := 3
+	var err error
+	for i := 0; i < max; i++ {
+		err = cmd.Run()
+		if err != nil {
+			fmt.Println("Failed to executeYoutubeDl", err)
+			// youtube-dl retry default 10 times(-R option mean)
+			// but retry 3times if error occur.
+			continue
+		}
+		// // success but..
+		// files, err := filepath.Glob(filepath.Join(dstd, "*.part.*"))
+		break
 	}
-	err = task.findTargetFile(dstd)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }

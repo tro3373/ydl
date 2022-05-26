@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -61,16 +60,18 @@ func createDirIfNotExist(targetDirPath, subDir string) string {
 }
 
 func (ctx Ctx) Clean() error {
-	fmt.Println("==> Cleaning", ctx.DoingDir)
-	// TODO duplicate with NewCtx doingDir
-	err := os.RemoveAll(ctx.DoingDir)
-	if err != nil {
-		return err
-	}
-	err = os.MkdirAll(ctx.DoingDir, 0775)
-	if err != nil {
-		return err
-	}
+	cleanTaskRunning(ctx)
+
+	// fmt.Println("==> Cleaning", ctx.DoingDir)
+	// // TODO duplicate with NewCtx doingDir
+	// err := os.RemoveAll(ctx.DoingDir)
+	// if err != nil {
+	// 	return err
+	// }
+	// err = os.MkdirAll(ctx.DoingDir, 0775)
+	// if err != nil {
+	// 	return err
+	// }
 	return nil
 }
 
