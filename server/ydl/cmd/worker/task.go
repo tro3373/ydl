@@ -86,27 +86,48 @@ func (task *Task) readDirHandler(dir, name string) error {
 	fullPath := filepath.Join(dir, name)
 
 	fmt.Println("==> readDirHandler: handling.. ", fullPath)
-	switch filepath.Ext(name) {
-	case ".json":
-		if name == "req.json" {
-			task.PathReqJson = fullPath
-		} else if strings.HasSuffix(name, "info.json") {
-			task.PathInfoJson = fullPath
-		}
-		return nil
-	case ".jpg", ".png", ".webp":
+	// switch filepath.Ext(name) {
+	// case ".json":
+	// 	if name == "req.json" {
+	// 		task.PathReqJson = fullPath
+	// 	} else if strings.HasSuffix(name, "info.json") {
+	// 		task.PathInfoJson = fullPath
+	// 	}
+	// 	return nil
+	// case ".jpg", ".png", ".webp":
+	// 	fmt.Println("==> readDirHandler: set jpg. ")
+	// 	task.PathThumbnail = fullPath
+	// case ".mp3":
+	// 	task.PathAudio = fullPath
+	// default:
+	// 	fmt.Println("==> readDirHandler: set movie. ", task.PathMovie)
+	// 	if len(task.PathMovie) > 0 {
+	// 		return nil
+	// 	}
+	// 	task.PathMovie = fullPath
+	// 	task.setPathAudioFromPathMovieIfNeeded()
+	// }
+	switch name {
+	case "req.json":
+		task.PathReqJson = fullPath
+	case "src.info.json":
+		task.PathInfoJson = fullPath
+	case "src.jpg", "src.png", "src.webp":
 		fmt.Println("==> readDirHandler: set jpg. ")
 		task.PathThumbnail = fullPath
-	case ".mp3":
+	case "src.mp3":
 		task.PathAudio = fullPath
 	default:
-		fmt.Println("==> readDirHandler: set movie. ", task.PathMovie)
-		if len(task.PathMovie) > 0 {
-			return nil
+		if strings.HasPrefix(name, "src") {
+			fmt.Println("==> readDirHandler: set movie. ", task.PathMovie)
+			if len(task.PathMovie) > 0 {
+				return nil
+			}
+			task.PathMovie = fullPath
+			task.setPathAudioFromPathMovieIfNeeded()
 		}
-		task.PathMovie = fullPath
-		task.setPathAudioFromPathMovieIfNeeded()
 	}
+
 	return nil
 }
 
