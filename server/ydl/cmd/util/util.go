@@ -1,7 +1,9 @@
 package util
 
 import (
+	"io/ioutil"
 	"os"
+	"reflect"
 	"time"
 
 	"github.com/fatih/color"
@@ -83,4 +85,40 @@ func ReadDir(dir string, fn func(dir, name string) error) error {
 		}
 	}
 	return nil
+}
+
+func ReadFileIfExist(filePath string) (string, error) {
+	if len(filePath) == 0 || !Exists(filePath) {
+		return "", nil
+	}
+	raw, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return "", err
+	}
+	return string(raw), nil
+}
+
+func WriteFile(filePath, data string) error {
+	return ioutil.WriteFile(filePath, []byte(data), 0644)
+}
+
+func Contains(list interface{}, target interface{}) bool {
+	listValue := reflect.ValueOf(list)
+	if listValue.Kind() != reflect.Slice {
+		return false
+	}
+	targetType := reflect.TypeOf(target)
+	targetValue := reflect.ValueOf(target)
+	for i := 0; i < listValue.Len(); i++ {
+		item := listValue.Index(i).Interface()
+		itemType := reflect.TypeOf(item)
+		if !targetType.ConvertibleTo(itemType) {
+			continue
+		}
+		t := targetValue.Convert(itemType).Interface()
+		if ok := reflect.DeepEqual(item, t); ok {
+			return true
+		}
+	}
+	return false
 }

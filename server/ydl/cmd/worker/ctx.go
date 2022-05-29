@@ -8,12 +8,13 @@ import (
 )
 
 type Ctx struct {
-	WorkDir   string `json:"workDir"`
-	LibDir    string `json:"libDir"`
-	QueueDir  string `json:"queueDir"`
-	DoingDir  string `json:"doingDir"`
-	DoneDir   string `json:"doneDir"`
-	YoutubeDl string `json:"youtubeDl"`
+	WorkDir         string `json:"workDir"`
+	LibDir          string `json:"libDir"`
+	QueueDir        string `json:"queueDir"`
+	DoingDir        string `json:"doingDir"`
+	DoneDir         string `json:"doneDir"`
+	DownloadLibRepo string `json:"DownloadLibRepo"`
+	DownloadLibName string `json:"DownloadLibName"`
 }
 
 func NewCtx(args []string) (Ctx, error) {
@@ -22,12 +23,13 @@ func NewCtx(args []string) (Ctx, error) {
 		return Ctx{}, err
 	}
 	ctx := Ctx{
-		WorkDir:   createDirIfNotExist(workDir, ""),
-		LibDir:    createDirIfNotExist(workDir, "lib"),
-		QueueDir:  createDirIfNotExist(workDir, "queue"),
-		DoingDir:  createDirIfNotExist(workDir, "doing"),
-		DoneDir:   createDirIfNotExist(workDir, "done"),
-		YoutubeDl: "youtube-dl",
+		WorkDir:         createDirIfNotExist(workDir, ""),
+		LibDir:          createDirIfNotExist(workDir, "lib"),
+		QueueDir:        createDirIfNotExist(workDir, "queue"),
+		DoingDir:        createDirIfNotExist(workDir, "doing"),
+		DoneDir:         createDirIfNotExist(workDir, "done"),
+		DownloadLibRepo: "ytdl-org/youtube-dl",
+		DownloadLibName: "youtube-dl",
 	}
 	err = ctx.Clean()
 	return ctx, err

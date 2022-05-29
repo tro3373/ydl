@@ -39,7 +39,7 @@ import (
 // }
 //
 func StartBatch(ctx worker.Ctx) {
-	err := worker.UpdateYoutubeDlIfNeeded(ctx)
+	err := worker.UpdateLibIFNeeded(ctx)
 	if err != nil {
 		fmt.Println("Update lib Error", err)
 		os.Exit(1)
