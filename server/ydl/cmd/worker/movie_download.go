@@ -10,11 +10,11 @@ import (
 	"github.com/tro3373/ydl/cmd/util"
 )
 
-func startDownloadMovie(task *Task) error {
+func StartDownloadMovie(task *Task) error {
 
 	util.LogInfo("=> Downloading via youtube-dl..")
 	cmd, dstd := buildCmd(task)
-	fmt.Println("==> Executing: ", cmd.String())
+	util.LogInfo("==> Executing: ", cmd.String())
 
 	err := runWithRetry(cmd, dstd)
 	if err != nil {
@@ -59,7 +59,7 @@ func buildCmd(task *Task) (*exec.Cmd, string) {
 }
 
 func runWithRetry(cmd *exec.Cmd, dstd string) error {
-	fmt.Println("==> Executing: ", cmd.String())
+	util.LogInfo("==> Executing: %s\n", cmd.String())
 	max := 3
 	var err error
 	for i := 0; i < max; i++ {

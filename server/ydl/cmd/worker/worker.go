@@ -51,13 +51,13 @@ func handleJson(ctx Ctx, jsonPath string) error {
 	util.LogInfo("=> Starting New Task!", task.String())
 
 	if !task.HasMovie() {
-		err = startDownloadMovie(task)
+		err = StartDownloadMovie(task)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = startConvert(task)
+	err = StartConvert(task)
 	if err != nil {
 		return err
 	}

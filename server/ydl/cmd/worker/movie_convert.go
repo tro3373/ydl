@@ -9,7 +9,7 @@ import (
 	"github.com/tro3373/ydl/cmd/util"
 )
 
-func startConvert(task *Task) error {
+func StartConvert(task *Task) error {
 
 	util.LogInfo("Converting mp3 via ffmpeg..")
 
@@ -34,24 +34,12 @@ func startConvert(task *Task) error {
 		album = req.Tag.Title
 	}
 	args = appendMetaDataIfPresent(args, "album", album)
-	genre := req.Tag.Genre
-	f := "Favorite artist of "
-	fw := f + "West"
-	fj := f + "Japan"
-	if len(genre) == 0 {
-		genre = fw
-	}
-	switch genre {
-	case "ja", "jap", "Japan", "Ja":
-		genre = fj
-	case "en", "En", "West":
-		genre = fw
-	}
+	genre := getGenre(req.Tag.Genre)
 	args = appendMetaDataIfPresent(args, "genre", genre)
 
 	args = append(args, task.PathAudio)
 
-	fmt.Println(append([]string{"==> Executing: ffmpeg"}, args...))
+	util.LogInfo("==> Executing: ffmpeg", args)
 	cmd := exec.Command("ffmpeg", args...)
 	cmd.Dir = task.PathDoingDir
 	cmd.Stdout = os.Stdout
@@ -69,4 +57,21 @@ func appendMetaDataIfPresent(args []string, key, val string) []string {
 	}
 	args = append(args, "-metadata")
 	return append(args, fmt.Sprintf("%s=%s", key, val))
+}
+
+func getGenre(genre string) string {
+	// genre := req.Tag.Genre
+	f := "Favorite artist of "
+	fw := f + "West"
+	fj := f + "Japan"
+	if len(genre) == 0 {
+		genre = fw
+	}
+	switch genre {
+	case "ja", "jap", "Japan", "Ja":
+		genre = fj
+	case "en", "En", "West":
+		genre = fw
+	}
+	return genre
 }

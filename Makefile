@@ -37,9 +37,9 @@ restart:
 	docker-compose -f docker-compose.$(STAGE).yml restart $(arg)
 
 logs:
-	docker-compose -f docker-compose.$(STAGE).yml logs
+	docker-compose -f docker-compose.$(STAGE).yml logs $(arg)
 logsf:
-	docker-compose -f docker-compose.$(STAGE).yml logs -f
+	docker-compose -f docker-compose.$(STAGE).yml logs -f $(arg)
 
 console:
 	docker exec -it $(CONTAINER_app)-$(STAGE) /bin/sh --login
