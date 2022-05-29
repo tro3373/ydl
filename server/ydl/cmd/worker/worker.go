@@ -51,13 +51,13 @@ func handleJson(ctx Ctx, jsonPath string) error {
 	util.LogInfo("=> Starting New Task!", task.String())
 
 	if !task.HasMovie() {
-		err = startYoutubeDl(task)
+		err = startDownloadMovie(task)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = startFfmpeg(task)
+	err = startConvert(task)
 	if err != nil {
 		return err
 	}

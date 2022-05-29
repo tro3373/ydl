@@ -10,7 +10,7 @@ import (
 	"github.com/tro3373/ydl/cmd/util"
 )
 
-func startYoutubeDl(task *Task) error {
+func startDownloadMovie(task *Task) error {
 
 	util.LogInfo("=> Downloading via youtube-dl..")
 	cmd, dstd := buildCmd(task)
