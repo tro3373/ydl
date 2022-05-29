@@ -15,6 +15,7 @@ type Ctx struct {
 	DoneDir         string `json:"doneDir"`
 	DownloadLibRepo string `json:"DownloadLibRepo"`
 	DownloadLibName string `json:"DownloadLibName"`
+	DownloadLibSums string `json:"DownloadLibSums"`
 }
 
 func NewCtx(args []string) (Ctx, error) {
@@ -28,8 +29,11 @@ func NewCtx(args []string) (Ctx, error) {
 		QueueDir:        createDirIfNotExist(workDir, "queue"),
 		DoingDir:        createDirIfNotExist(workDir, "doing"),
 		DoneDir:         createDirIfNotExist(workDir, "done"),
-		DownloadLibRepo: "ytdl-org/youtube-dl",
-		DownloadLibName: "youtube-dl",
+		DownloadLibRepo: "yt-dlp/yt-dlp",
+		DownloadLibName: "yt-dlp",
+		DownloadLibSums: "SHA2-256SUMS",
+		// DownloadLibRepo: "ytdl-org/youtube-dl",
+		// DownloadLibName: "youtube-dl",
 	}
 	err = ctx.Clean()
 	return ctx, err
