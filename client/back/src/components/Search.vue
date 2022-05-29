@@ -167,6 +167,9 @@ export default {
       console.debug('==> Caching to local storage..', data);
       localStorage.setItem(LOCAL_STRAGE_KEY_CACHE, JSON.stringify(data));
     },
+    youtubeId() {
+      this.onYoutubeIdChanged();
+    },
   },
   data() {
     const inputInit = {
@@ -232,6 +235,17 @@ export default {
       const _id = '' + id;
       const res = _id.match(/^[a-zA-Z0-9_-]{11}$/);
       return !!res;
+    },
+    async onYoutubeIdChanged() {
+      if (!this.youtubeId) {
+        return;
+      }
+      const res = await client.youtubeOembedInfo(this.youtubeId);
+      console.log(res);
+      this.title = res.title;
+      this.artist = res.author_name;
+      this.album = res.author_name;
+      this.genre = '';
     },
     async submit() {
       this.loader = 'loading';
