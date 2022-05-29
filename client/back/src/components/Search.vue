@@ -1,7 +1,7 @@
 <template>
   <v-container>
-    <v-row class="text-center">
-      <v-col cols="3">
+    <v-layout wrap row>
+      <v-flex xs12 sm12 md4 class="pa-1">
         <v-card>
           <v-progress-linear
             :active="loading"
@@ -77,9 +77,9 @@
             </v-btn>
           </v-card-actions>
         </v-card>
-      </v-col>
+      </v-flex>
 
-      <v-col cols="8">
+      <v-flex xs12 sm12 md8 class="pa-1">
         <v-card>
           <v-toolbar color="primary" dark>
             <!-- <v-app-bar-nav-icon></v-app-bar-nav-icon> -->
@@ -131,8 +131,8 @@
             <!-- </v-list-item>                                                           -->
           </v-list>
         </v-card>
-      </v-col>
-    </v-row>
+      </v-flex>
+    </v-layout>
   </v-container>
 </template>
 
