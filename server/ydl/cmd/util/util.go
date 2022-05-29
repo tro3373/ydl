@@ -1,12 +1,19 @@
 package util
 
 import (
+	"bufio"
+	"crypto/sha256"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"reflect"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/pkg/errors"
 )
 
 func LogInfo(format string, a ...interface{}) {
@@ -121,4 +128,50 @@ func Contains(list interface{}, target interface{}) bool {
 		}
 	}
 	return false
+}
+
+func CheckSha256sum(targetFile, sha256SumFile, key string) error {
+	f, err := os.Open(targetFile)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return err
+	}
+
+	target := fmt.Sprintf("%x", h.Sum(nil))
+	sha256Sum, err := readSha256Sums(sha256SumFile, key)
+	if err != nil {
+		return err
+	}
+	fmt.Println("==>    target:", target)
+	fmt.Println("==> sha256Sum:", sha256Sum)
+	if target == sha256Sum {
+		fmt.Println("===> sha256Sum ok")
+		return nil
+	}
+	return errors.Errorf("Invalid sha256sum binary. target:%s, sha256sum:%s", targetFile, sha256SumFile)
+}
+
+func readSha256Sums(filePath, key string) (string, error) {
+	fp, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer fp.Close()
+
+	r := regexp.MustCompile(".*" + key)
+	scanner := bufio.NewScanner(fp)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if !r.MatchString(line) {
+			continue
+		}
+		idx := strings.Index(line, " ")
+		return line[0:idx], nil
+	}
+	return "", errors.Errorf("No such sha256Sum exist %s", key)
 }

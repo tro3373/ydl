@@ -15,8 +15,8 @@ func UpdateLibIFNeeded(ctx Ctx) error {
 	repo := ctx.DownloadLibRepo
 	libd := ctx.LibDir
 	libName := ctx.DownloadLibName
-	targets := []string{libName, libName + ".sig"}
-	err := gh.DownloadIfNeeded(repo, libd, targets)
+	sums := ctx.DownloadLibSums
+	err := gh.DownloadIfNeeded(repo, libd, libName, sums)
 	if err != nil {
 		return err
 	}

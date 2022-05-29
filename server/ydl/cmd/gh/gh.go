@@ -15,8 +15,8 @@ import (
 	"github.com/tro3373/ydl/cmd/util"
 )
 
-func DownloadIfNeeded(repo, dstd string, targetAssetNames []string) error {
-	fmt.Printf("==> Start check update %s... targetAssetNames:%s\n", repo, targetAssetNames)
+func DownloadIfNeeded(repo, dstd string, target, sha256sum string) error {
+	fmt.Printf("==> Start check update %s... target:%s, sha256sum:%s\n", repo, target, sha256sum)
 
 	result, err := GetReleaseLatestTagInfo(repo)
 	if err != nil {
@@ -50,6 +50,7 @@ func DownloadIfNeeded(repo, dstd string, targetAssetNames []string) error {
 
 	fmt.Println("===> Downloading...")
 
+	targetAssetNames := []string{target, sha256sum}
 	results := make([]interface{}, 0)
 	for _, asset := range result["assets"].([]interface{}) {
 		a := asset.(map[string]interface{})
@@ -63,11 +64,17 @@ func DownloadIfNeeded(repo, dstd string, targetAssetNames []string) error {
 	for _, res := range results {
 		go downloadResource(dstd, repo, res.(float64), c)
 	}
-	// TODO sig check
 	for i := 0; i < len(results); i++ {
 		<-c
 	}
-	// - imple call logic
+	err = util.CheckSha256sum(
+		filepath.Join(dstd, target),
+		filepath.Join(dstd, sha256sum),
+		target,
+	)
+	if err != nil {
+		return err
+	}
 	return util.WriteFile(versionFile, tag)
 }
 
