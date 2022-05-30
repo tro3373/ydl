@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -122,6 +123,9 @@ func readJsons(files []string) ([]response.Res, error) {
 		json.Unmarshal(raw, &task)
 		reses = append(reses, response.NewRes(task))
 	}
+	sort.Slice(reses, func(i, j int) bool {
+		return reses[i].Req.CreatedAt > reses[j].Req.CreatedAt
+	})
 	return reses, nil
 }
 
