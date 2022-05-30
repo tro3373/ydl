@@ -45,5 +45,6 @@ console:
 	docker exec -it $(CONTAINER_app)-$(STAGE) /bin/sh --login
 console_nginx:
 	docker exec -it $(CONTAINER_ngx) /bin/bash --login
-reload:
+reload-nginx:
+	# docker kill $(CONTAINER_ngx)
 	docker exec -it $(CONTAINER_ngx) nginx -s reload
