@@ -99,27 +99,6 @@ func (task *Task) readDirHandler(dir, name string) error {
 	fullPath := filepath.Join(dir, name)
 
 	fmt.Println("==> readDirHandler: handling.. ", fullPath)
-	// switch filepath.Ext(name) {
-	// case ".json":
-	// 	if name == "req.json" {
-	// 		task.PathReqJson = fullPath
-	// 	} else if strings.HasSuffix(name, "info.json") {
-	// 		task.PathInfoJson = fullPath
-	// 	}
-	// 	return nil
-	// case ".jpg", ".png", ".webp":
-	// 	fmt.Println("==> readDirHandler: set jpg. ")
-	// 	task.PathThumbnail = fullPath
-	// case ".mp3":
-	// 	task.PathAudio = fullPath
-	// default:
-	// 	fmt.Println("==> readDirHandler: set movie. ", task.PathMovie)
-	// 	if len(task.PathMovie) > 0 {
-	// 		return nil
-	// 	}
-	// 	task.PathMovie = fullPath
-	// 	task.setPathAudioFromPathMovieIfNeeded()
-	// }
 	switch name {
 	case "req.json":
 		task.PathReqJson = fullPath
@@ -184,7 +163,6 @@ func (task *Task) HasAudio() bool {
 }
 
 func (task *Task) Done() error {
-	task.save()
 	doingDir := task.PathDoingDir
 	if !util.Exists(task.PathDoneDir) {
 		return os.Rename(doingDir, task.PathDoneDir)
@@ -193,6 +171,16 @@ func (task *Task) Done() error {
 	if err != nil {
 		return err
 	}
+
+	err = task.findTargetFile(task.PathDoneDir)
+	if err != nil {
+		return err
+	}
+	err = task.save()
+	if err != nil {
+		return err
+	}
+
 	empty, err := util.IsEmptyDir(doingDir)
 	if err != nil {
 		return err
@@ -209,7 +197,7 @@ func (task *Task) save() error {
 	if err != nil {
 		return err
 	}
-	dst := filepath.Join(task.PathDoingDir, "task.json")
+	dst := filepath.Join(task.PathDoneDir, "task.json")
 	return ioutil.WriteFile(dst, data, 0644)
 }
 
