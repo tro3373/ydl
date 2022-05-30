@@ -40,17 +40,18 @@ func NewTask(ctx Ctx, jsonPath string) (*Task, error) {
 	task.PathDoneDir = ctx.GetDoneDir(key)
 	findTargetDir := task.PathDoneDir
 
-	task.PathDoingDir = ctx.GetDoingDir(key)
-	if util.Exists(task.PathDoingDir) {
+	doingDir := ctx.GetDoingDir(key)
+	task.PathDoingDir = doingDir
+	if util.Exists(doingDir) {
 		findTargetDir = task.PathDoneDir
 	} else {
-		os.MkdirAll(task.PathDoingDir, 0775)
+		os.MkdirAll(doingDir, 0775)
 	}
 	err = task.findTargetFile(findTargetDir)
 	if err != nil {
 		return &task, err
 	}
-	task.PathReqJson = filepath.Join(task.PathDoingDir, "req.json")
+	task.PathReqJson = filepath.Join(doingDir, "req.json")
 	err = os.Rename(jsonPath, task.PathReqJson)
 	if err != nil {
 		return &task, err
@@ -172,10 +173,23 @@ func (task *Task) HasAudio() bool {
 
 func (task *Task) Done() error {
 	task.save()
+	doingDir := task.PathDoingDir
 	if !util.Exists(task.PathDoneDir) {
-		return os.Rename(task.PathDoingDir, task.PathDoneDir)
+		return os.Rename(doingDir, task.PathDoneDir)
 	}
-	return util.ReadDir(task.PathDoingDir, task.RenameDoing2DoneHandler)
+	err := util.ReadDir(doingDir, task.RenameDoing2DoneHandler)
+	if err != nil {
+		return err
+	}
+	empty, err := util.IsEmptyDir(doingDir)
+	if err != nil {
+		return err
+	}
+	if !empty {
+		util.LogWarn("==> Task done but not empty. %s", doingDir)
+		return nil
+	}
+	return os.Remove(doingDir)
 }
 
 func (task *Task) save() error {

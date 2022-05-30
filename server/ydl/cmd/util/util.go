@@ -109,6 +109,22 @@ func WriteFile(filePath, data string) error {
 	return ioutil.WriteFile(filePath, []byte(data), 0644)
 }
 
+func IsEmptyDir(dirPath string) (bool, error) {
+	f, err := os.Open(dirPath)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+	_, err = f.Readdirnames(1)
+	if err != nil {
+		return false, err
+	}
+	if err == io.EOF {
+		return true, nil
+	}
+	return false, nil
+}
+
 func Contains(list interface{}, target interface{}) bool {
 	listValue := reflect.ValueOf(list)
 	if listValue.Kind() != reflect.Slice {
