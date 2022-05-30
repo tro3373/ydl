@@ -1,6 +1,8 @@
 package response
 
 import (
+	"fmt"
+
 	"github.com/tro3373/ydl/cmd/request"
 	"github.com/tro3373/ydl/cmd/worker"
 )
@@ -13,10 +15,10 @@ type Res struct {
 }
 
 func NewRes(task worker.Task) Res {
-	doneDir := task.PathDoneDir
-	thumbnail := relPath(doneDir, task.PathThumbnail)
-	movie := relPath(doneDir, task.PathMovie)
-	audio := relPath(doneDir, task.PathAudio)
+	workDir := task.Ctx.WorkDir
+	thumbnail := toResourcePath(workDir, task.PathThumbnail)
+	movie := toResourcePath(workDir, task.PathMovie)
+	audio := toResourcePath(workDir, task.PathAudio)
 	res := Res{
 		Req:       task.Req,
 		Thumbnail: thumbnail,
@@ -26,6 +28,6 @@ func NewRes(task worker.Task) Res {
 	return res
 }
 
-func relPath(dirPath, filePath string) string {
-	return filePath[len(dirPath)+1:]
+func toResourcePath(dirPath, filePath string) string {
+	return fmt.Sprintf("/resource/%s", filePath[len(dirPath)+1:])
 }

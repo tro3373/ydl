@@ -15,7 +15,7 @@ services:
       - ./server/nginx/proxy.conf:/etc/nginx/proxy.conf
       - ./server/nginx/mime.types:/etc/nginx/conf/mime.types
       - ./client/back/dist:/usr/share/nginx/html
-      - ./data/work:/usr/share/nginx/html/resouce
+      - ./data/work:/usr/share/nginx/html/resource
     # links:
     #   - app
     depends_on:
