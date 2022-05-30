@@ -2,7 +2,7 @@ package request
 
 import "regexp"
 
-type Exec struct {
+type Req struct {
 	Url       string `json:"url" binding:"required"`
 	Tag       Tag    `json:"tag"`
 	CreatedAt string `json:"createdAt"`
@@ -15,7 +15,7 @@ type Tag struct {
 	Genre  string `json:"genre"`
 }
 
-func (r Exec) Key() string {
+func (r Req) Key() string {
 	if len(r.Url) == 0 {
 		return ""
 	}

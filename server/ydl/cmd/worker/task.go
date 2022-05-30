@@ -15,18 +15,26 @@ import (
 )
 
 type Task struct {
-	Ctx           Ctx           `json:"ctx"`
-	Req           *request.Exec `json:"req"`
-	PathDoingDir  string        `json:"pathDoingDir"`
-	PathDoneDir   string        `json:"pathDoneDir"`
-	PathReqJson   string        `json:"pathReqJson"`
-	PathInfoJson  string        `json:"pathInfoJson"`
-	PathThumbnail string        `json:"pathThumbnail"`
-	PathMovie     string        `json:"pathMovie"`
-	PathAudio     string        `json:"pathAudio"`
+	Ctx           Ctx          `json:"ctx"`
+	Req           *request.Req `json:"req"`
+	PathDoingDir  string       `json:"pathDoingDir"`
+	PathDoneDir   string       `json:"pathDoneDir"`
+	PathReqJson   string       `json:"pathReqJson"`
+	PathInfoJson  string       `json:"pathInfoJson"`
+	PathThumbnail string       `json:"pathThumbnail"`
+	PathMovie     string       `json:"pathMovie"`
+	PathAudio     string       `json:"pathAudio"`
 }
 
 func NewTask(ctx Ctx, jsonPath string) (*Task, error) {
+	return newTaskInner(ctx, jsonPath, true)
+}
+
+func ReadTask(ctx Ctx, jsonPath string) (*Task, error) {
+	return newTaskInner(ctx, jsonPath, false)
+}
+
+func newTaskInner(ctx Ctx, jsonPath string, forQueue bool) (*Task, error) {
 	task := Task{
 		Ctx: ctx,
 	}
@@ -45,16 +53,20 @@ func NewTask(ctx Ctx, jsonPath string) (*Task, error) {
 	if util.Exists(doingDir) {
 		findTargetDir = task.PathDoneDir
 	} else {
-		os.MkdirAll(doingDir, 0775)
+		if forQueue {
+			os.MkdirAll(doingDir, 0775)
+		}
 	}
 	err = task.findTargetFile(findTargetDir)
 	if err != nil {
 		return &task, err
 	}
 	task.PathReqJson = filepath.Join(doingDir, "req.json")
-	err = os.Rename(jsonPath, task.PathReqJson)
-	if err != nil {
-		return &task, err
+	if forQueue {
+		err = os.Rename(jsonPath, task.PathReqJson)
+		if err != nil {
+			return &task, err
+		}
 	}
 	return &task, nil
 }
@@ -67,12 +79,12 @@ func (task *Task) Key() string {
 	return task.Req.Key()
 }
 
-func (task *Task) readJson(jsonPath string) (*request.Exec, error) {
+func (task *Task) readJson(jsonPath string) (*request.Req, error) {
 	raw, err := ioutil.ReadFile(jsonPath)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed to read json %s", jsonPath)
 	}
-	var req request.Exec
+	var req request.Req
 	json.Unmarshal(raw, &req)
 	return &req, nil
 }

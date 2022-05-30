@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/tro3373/ydl/cmd/middleware"
 	"github.com/tro3373/ydl/cmd/request"
+	"github.com/tro3373/ydl/cmd/response"
 	"github.com/tro3373/ydl/cmd/util"
 	"github.com/tro3373/ydl/cmd/worker"
 	"go.uber.org/zap"
@@ -78,7 +79,7 @@ func StartApi(ctx worker.Ctx) {
 	})
 
 	engine.POST("/api", func(c *gin.Context) {
-		var req request.Exec
+		var req request.Req
 		if err := c.Bind(&req); err != nil {
 			logger.Error("[ERROR] ==> Failed to bind request.", zap.String("Error:", err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": "BadRequest"})
@@ -102,29 +103,29 @@ func findJsons(rootDir, key string) ([]string, error) {
 	if len(key) == 0 {
 		key = "*"
 	}
-	return filepath.Glob(filepath.Join(rootDir, key, "req.json"))
+	return filepath.Glob(filepath.Join(rootDir, key, "task.json"))
 }
 
 func getJsonPath(dir, key string) string {
 	return filepath.Join(dir, fmt.Sprintf("%s.json", key))
 }
 
-func readJsons(files []string) ([]request.Exec, error) {
-	var res []request.Exec
+func readJsons(files []string) ([]response.Res, error) {
+	var reses []response.Res
 	for _, file := range files {
 		logger.Info("[INFO] ==> ", zap.String("file", file))
 		raw, err := ioutil.ReadFile(file)
 		if err != nil {
 			return nil, err
 		}
-		var req request.Exec
-		json.Unmarshal(raw, &req)
-		res = append(res, req)
+		var task worker.Task
+		json.Unmarshal(raw, &task)
+		reses = append(reses, response.NewRes(task))
 	}
-	return res, nil
+	return reses, nil
 }
 
-func saveRequest(dstRootDir string, req request.Exec) error {
+func saveRequest(dstRootDir string, req request.Req) error {
 	key := req.Key()
 
 	timestamp := time.Now().Format("20060102_150405")
