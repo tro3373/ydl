@@ -21,7 +21,7 @@
             </v-text-field>
 
             <v-btn
-              color="primary"
+              color="red"
               dark
               class="ma-2 white--text"
               href="https://www.youtube.com/"
@@ -98,19 +98,26 @@
           <v-list two-line>
             <!-- <v-subheader inset>Folders</v-subheader> -->
             <v-list-item v-for="done in doneList" :key="done.url">
-              <v-list-item-avatar>
-                <v-icon class="grey lighten-1" dark>
-                  mdi-folder
-                </v-icon>
+              <v-list-item-avatar size="80" width="160" rounded>
+                <v-img :src="done.thumbnail"></v-img>
               </v-list-item-avatar>
               <v-list-item-content>
-                <v-list-item-title v-text="done.tag.title"></v-list-item-title>
-                <v-list-item-subtitle v-text="done.tag.artist"></v-list-item-subtitle>
+                <v-list-item-title v-text="done.req.tag.title"></v-list-item-title>
+                <v-list-item-subtitle v-text="done.req.tag.artist"></v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
                 <v-btn icon>
-                  <v-icon color="grey lighten-1">mdi-information</v-icon>
+                  <v-icon @click="download(done, 1)" color="red">mdi-movie</v-icon>
                 </v-btn>
+                <div class="v-icon notranslate mdi theme--light" style="font-size: 0.2rem;">
+                  {{ humanSize(done.movieSize) }}
+                </div>
+                <v-btn icon>
+                  <v-icon @click="download(done, 0)" color="red">mdi-music</v-icon>
+                </v-btn>
+                <div class="v-icon notranslate mdi theme--light" style="font-size: 0.2rem;">
+                  {{ humanSize(done.audioSize) }}
+                </div>
               </v-list-item-action>
             </v-list-item>
             <!-- <v-divider inset></v-divider>                                            -->
@@ -254,7 +261,7 @@ export default {
       }
       // const res = await client.list();
       // console.log({ res });
-      const res = await client.download({
+      const res = await client.downloadRequest({
         url: this.youtubeId,
         tag: {
           title: this.title,
@@ -264,6 +271,23 @@ export default {
         },
       });
       console.log({ res });
+    },
+    download(done, movie) {
+      const title = done.req.tag.title;
+      let url = done.audio;
+      if (movie) {
+        url = done.movie;
+      }
+      const ext = this.ext(url);
+      url = `${url}?f=${title}.${ext}`;
+      window.open(url, '_self');
+    },
+    ext(file) {
+      return file.substr(file.lastIndexOf('.') + 1);
+    },
+    humanSize(size) {
+      if (!size || size === -1) return '';
+      return `${(size / 1024 / 1024).toFixed(1)}Mb`;
     },
   },
 };

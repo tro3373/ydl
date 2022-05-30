@@ -27,7 +27,7 @@ const ApiClient = class ApiClient extends BaseClient {
     return res.data;
   }
 
-  async download(params) {
+  async downloadRequest(params) {
     const res = await super.request({
       ...ENDPOINT.DL_REQUEST,
       data: params,
