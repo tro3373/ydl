@@ -65,8 +65,8 @@ services:
   #     - TZ=Asia/Tokyo
   #   working_dir: /go/src
   #   volumes:
-  #     - ./server/.data/api:/go/pkg
-  #     - ./server/.data/work:/go/src/work
+  #     - ./data/api:/go/pkg
+  #     - ./data/work:/go/src/work
   #     - ./server/ydl:/go/src
   #   ports:
   #     - 3000:3000
@@ -87,8 +87,8 @@ services:
   #     - TZ=Asia/Tokyo
   #   working_dir: /go/src
   #   volumes:
-  #     - ./server/.data/batch:/go/pkg
-  #     - ./server/.data/work:/go/src/work
+  #     - ./data/batch:/go/pkg
+  #     - ./data/work:/go/src/work
   #     - ./server/ydl:/go/src
   #   entrypoint:
   #     - /go/src/ydl
@@ -108,7 +108,7 @@ services:
       - TZ=Asia/Tokyo
     working_dir: /root
     volumes:
-      - ./server/.data/work:/root/work
+      - ./data/work:/root/work
     ports:
       - 3000:3000
     tty:
