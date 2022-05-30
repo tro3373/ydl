@@ -116,11 +116,11 @@ func IsEmptyDir(dirPath string) (bool, error) {
 	}
 	defer f.Close()
 	_, err = f.Readdirnames(1)
-	if err != nil {
-		return false, err
-	}
 	if err == io.EOF {
 		return true, nil
+	}
+	if err != nil {
+		return false, err
 	}
 	return false, nil
 }
@@ -190,4 +190,13 @@ func readSha256Sums(filePath, key string) (string, error) {
 		return line[0:idx], nil
 	}
 	return "", errors.Errorf("No such sha256Sum exist %s", key)
+}
+
+func GetFileSize(filePath string) (int64, error) {
+	info, err := os.Stat(filePath)
+	if err != nil {
+		return -1, err
+	}
+	return info.Size(), nil
+
 }
