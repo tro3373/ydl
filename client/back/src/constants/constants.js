@@ -2,6 +2,10 @@
 
 const CommonConstants = {
   API_PREFIX: process.env.VUE_APP_API_PREFIX,
+  LOCAL_STRAGE_KEY: {
+    CACHE: 'local_strage_key_cache',
+    UUID: 'local_strage_key_uuid',
+  },
 };
 const EnvConstants = {};
 

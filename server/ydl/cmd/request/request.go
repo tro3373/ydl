@@ -6,6 +6,7 @@ type Req struct {
 	Url       string `json:"url" binding:"required"`
 	Tag       Tag    `json:"tag"`
 	CreatedAt string `json:"createdAt"`
+	Uuid      string `json:"uuid"`
 }
 
 type Tag struct {

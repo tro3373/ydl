@@ -61,14 +61,15 @@ func StartApi(ctx worker.Ctx) {
 	logger = zapLogger
 
 	engine.GET("/api", func(c *gin.Context) {
+		uuid := c.Request.Header.Get("x-uuid")
 		var key = c.Query("key")
-		logger.Info("[INFO] ==> ", zap.String("key", key))
+		logger.Info("[INFO] ==> ", zap.String("uuid", uuid), zap.String("key", key))
 		files, err := findJsons(ctx.DoneDir, key)
 		if err != nil {
 			logger.Error("[ERROR] ==> Failed to find jsons.", zap.String("Error:", err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
 		}
-		jsons, err := readJsons(files)
+		jsons, err := readJsons(files, uuid)
 		if err != nil {
 			logger.Error("[ERROR] ==> Failed to read jsons.", zap.String("Error:", err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
@@ -86,6 +87,7 @@ func StartApi(ctx worker.Ctx) {
 			c.JSON(http.StatusBadRequest, gin.H{"status": "BadRequest"})
 			return
 		}
+		req.Uuid = c.Request.Header.Get("x-uuid")
 		err := saveRequest(ctx.QueueDir, req)
 		if err != nil {
 			logger.Error("[ERROR] ==> Failed to save request.", zap.String("Error:", err.Error()))
@@ -111,16 +113,19 @@ func getJsonPath(dir, key string) string {
 	return filepath.Join(dir, fmt.Sprintf("%s.json", key))
 }
 
-func readJsons(files []string) ([]response.Res, error) {
+func readJsons(files []string, uuid string) ([]response.Res, error) {
 	var reses []response.Res
 	for _, file := range files {
-		logger.Info("[INFO] ==> ", zap.String("file", file))
+		logger.Debug("[INFO] ==> ", zap.String("uuid", uuid), zap.String("file", file))
 		raw, err := ioutil.ReadFile(file)
 		if err != nil {
 			return nil, err
 		}
 		var task worker.Task
 		json.Unmarshal(raw, &task)
+		if task.Req.Uuid != uuid {
+			continue
+		}
 		reses = append(reses, response.NewRes(task))
 	}
 	sort.Slice(reses, func(i, j int) bool {

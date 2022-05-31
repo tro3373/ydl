@@ -151,8 +151,8 @@ import _ from 'lodash';
 import qs from 'query-string';
 import Player from '@/components/Player.vue';
 import client from '@/api/client.js';
+import Const from '../constants/constants.js';
 const { mapActions: mapActionsDone, mapGetters: mapGettersDone } = createNamespacedHelpers('done');
-const LOCAL_STRAGE_KEY_CACHE = 'local_strage_key_cache';
 export default {
   name: 'Search',
   components: {
@@ -174,7 +174,7 @@ export default {
         genre: this.genre,
       };
       console.debug('==> Caching to local storage..', data);
-      localStorage.setItem(LOCAL_STRAGE_KEY_CACHE, JSON.stringify(data));
+      localStorage.setItem(Const.LOCAL_STRAGE_KEY.CACHE, JSON.stringify(data));
     },
     youtubeId() {
       this.onYoutubeIdChanged();
@@ -189,7 +189,7 @@ export default {
       genre: '',
     };
     const input = JSON.parse(
-      localStorage.getItem(LOCAL_STRAGE_KEY_CACHE) || JSON.stringify(inputInit)
+      localStorage.getItem(Const.LOCAL_STRAGE_KEY.CACHE) || JSON.stringify(inputInit)
     );
     return {
       ...input,

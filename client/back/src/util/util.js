@@ -1,6 +1,10 @@
 'use strict';
 
-module.exports.isEmpty = arg => {
+import { v4 as uuidv4 } from 'uuid';
+
+const core = {};
+
+core.isEmpty = arg => {
   if (arg == null) return true;
   if (arg === void 0) return true;
   switch (typeof arg) {
@@ -26,3 +30,9 @@ module.exports.isEmpty = arg => {
   let tmp = '' + arg;
   return 0 === tmp.length;
 };
+
+core.uuid = () => {
+  return uuidv4();
+};
+
+export default core;
