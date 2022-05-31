@@ -16,6 +16,8 @@
               v-model="url"
               :rules="rules.url"
               label="youtube url or id を入力"
+              @focus="oembedGuard = false"
+              @blur="oembedGuard = true"
               clearable
             >
             </v-text-field>
@@ -97,7 +99,7 @@
           <!-- <v-list subheader two-line> -->
           <v-list two-line>
             <!-- <v-subheader inset>Folders</v-subheader> -->
-            <v-list-item v-for="done in doneList" :key="done.url">
+            <v-list-item v-for="done in doneList" :key="done.url" @click="onItemSelected(done)">
               <v-list-item-avatar size="80" width="160" rounded>
                 <v-img :src="done.thumbnail"></v-img>
               </v-list-item-avatar>
@@ -202,6 +204,7 @@ export default {
       // type: 'mp3',
       loader: null,
       loading: false,
+      oembedGuard: true,
     };
   },
   computed: {
@@ -244,11 +247,10 @@ export default {
       return !!res;
     },
     async onYoutubeIdChanged() {
-      if (!this.youtubeId) {
+      if (!this.youtubeId || this.oembedGuard) {
         return;
       }
       const res = await client.youtubeOembedInfo(this.youtubeId);
-      console.log(res);
       this.title = res.title;
       this.artist = res.author_name;
       this.album = res.author_name;
@@ -271,6 +273,14 @@ export default {
         },
       });
       console.log({ res });
+    },
+    onItemSelected(done) {
+      console.log({ done });
+      this.url = done.req.url;
+      this.title = done.req.tag.title;
+      this.artist = done.req.tag.artist;
+      this.album = done.req.tag.album;
+      this.genre = done.req.tag.genre;
     },
     download(done, movie) {
       const title = done.req.tag.title;
