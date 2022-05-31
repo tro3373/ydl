@@ -10,10 +10,12 @@ init:
 	fi;
 
 local: init
-	@EXTERNAL_IP=$(local_ip) npm run serve
+	@EXTERNAL_IP=$(local_ip) npm run serve-dev
 
-build: init
-	@npm run build
+build-dev: init
+	@npm run build-dev
+build-prd: init
+	@npm run build-prd
 
 # dev: init
 # 	@npm run build-dev

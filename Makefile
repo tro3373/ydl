@@ -21,7 +21,7 @@ build_if_needed:
 	([[ ! -e ./server/ydl/ydl ]] || $(MAKE) build-ydl); \
 		$(MAKE) build-ydl
 build-client:
-	@cd ./client/back && $(MAKE) build
+	@cd ./client/back && $(MAKE) build-$(STAGE)
 build: build-ydl build-client
 
 build-image: build

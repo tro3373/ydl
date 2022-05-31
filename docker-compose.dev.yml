@@ -50,6 +50,6 @@ services:
       - ./client/back:/src
     ports:
       - 8080:8080
-    command: yarn serve
+    command: yarn serve-dev
     depends_on:
       - app

@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "serve-dev": "vue-cli-service serve --mode development",
+    "serve-prd": "vue-cli-service serve --mode production",
+    "build-dev": "vue-cli-service build --mode development",
+    "build-prd": "vue-cli-service build --mode production",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint",
     "lint-fix": "eslint --fix './**/*.{js,vue}' && prettier --write './**/*.{js,vue}'"
