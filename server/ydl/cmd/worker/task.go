@@ -122,28 +122,28 @@ func (task *Task) readDirHandler(dir, name string) error {
 		task.TaskPath.Audio = fullPath
 	default:
 		if strings.HasPrefix(name, "src") {
-			fmt.Println("==> readDirHandler: set movie. ", task.TaskPath.Movie)
-			if len(task.TaskPath.Movie) > 0 {
-				return nil
-			}
+			// fmt.Println("==> readDirHandler: set movie. ", task.TaskPath.Movie)
+			// if len(task.TaskPath.Movie) > 0 {
+			// 	return nil
+			// }
 			task.TaskPath.Movie = fullPath
-			task.setPathAudioFromPathMovieIfNeeded()
+			// task.setPathAudioFromPathMovieIfNeeded()
 		}
 	}
 
 	return nil
 }
 
-func (task *Task) setPathAudioFromPathMovieIfNeeded() {
-	if len(task.TaskPath.Audio) > 0 {
-		return
-	}
-	movie := task.TaskPath.Movie
-	dir := filepath.Dir(movie)
-	ext := filepath.Ext(movie)
-	name := filepath.Base(movie[:len(movie)-len(ext)])
-	task.TaskPath.Audio = filepath.Join(dir, name) + ".mp3"
-}
+// func (task *Task) setPathAudioFromPathMovieIfNeeded() {
+// 	if len(task.TaskPath.Audio) > 0 {
+// 		return
+// 	}
+// 	movie := task.TaskPath.Movie
+// 	dir := filepath.Dir(movie)
+// 	ext := filepath.Ext(movie)
+// 	name := filepath.Base(movie[:len(movie)-len(ext)])
+// 	task.TaskPath.Audio = filepath.Join(dir, name) + ".mp3"
+// }
 
 func (task *Task) genTitleFromInfoIfEnable() {
 	if len(task.TaskPath.InfoJson) == 0 {
@@ -174,13 +174,14 @@ func (task *Task) HasAudio() bool {
 }
 
 func (task *Task) Done() error {
-	doingDir := task.TaskPath.Doing
-	if !util.Exists(task.TaskPath.Done) {
-		err := os.MkdirAll(doingDir, 0775)
+	doneDir := task.TaskPath.Done
+	if !util.Exists(doneDir) {
+		err := os.MkdirAll(doneDir, 0775)
 		if err != nil {
 			return err
 		}
 	}
+	doingDir := task.TaskPath.Doing
 	err := util.ReadDir(doingDir, task.RenameDoing2DoneHandler)
 	if err != nil {
 		return err
