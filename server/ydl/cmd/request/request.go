@@ -4,7 +4,7 @@ import "regexp"
 
 type Req struct {
 	Url       string `json:"url" binding:"required"`
-	Uuid      string `json:"uuid" binding:"required"`
+	Uuid      string `json:"uuid"`
 	CreatedAt string `json:"createdAt"`
 	Tag       Tag    `jsoin:"tag"`
 }
