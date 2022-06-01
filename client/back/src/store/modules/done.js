@@ -18,7 +18,7 @@ export const done = {
   actions: {
     async getDone({ commit }) {
       const res = await client.list();
-      commit('doneList', res.list);
+      commit('doneList', res.list || []);
     },
   },
 };
