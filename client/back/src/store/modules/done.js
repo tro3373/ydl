@@ -3,7 +3,7 @@ import client from '@/api/client';
 export const done = {
   namespaced: true,
   state: {
-    doneList: {},
+    doneList: [],
   },
   getters: {
     doneList: state => {
