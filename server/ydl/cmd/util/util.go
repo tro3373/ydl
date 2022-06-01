@@ -24,6 +24,10 @@ func LogWarn(format string, a ...interface{}) {
 	logWrap(color.Yellow, format, a...)
 }
 
+func LogError(format string, a ...interface{}) {
+	logWrap(color.Red, format, a...)
+}
+
 func logWrap(fn func(format string, a ...interface{}), format string, a ...interface{}) {
 	l := len(a)
 	if l == 0 {
@@ -198,5 +202,4 @@ func GetFileSize(filePath string) (int64, error) {
 		return -1, err
 	}
 	return info.Size(), nil
-
 }

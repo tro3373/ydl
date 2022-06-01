@@ -4,9 +4,9 @@ import "regexp"
 
 type Req struct {
 	Url       string `json:"url" binding:"required"`
-	Tag       Tag    `json:"tag"`
+	Uuid      string `json:"uuid" binding:"required"`
 	CreatedAt string `json:"createdAt"`
-	Uuid      string `json:"uuid"`
+	Tag       Tag    `jsoin:"tag"`
 }
 
 type Tag struct {
@@ -16,13 +16,13 @@ type Tag struct {
 	Genre  string `json:"genre"`
 }
 
-func (r Req) Key() string {
-	if len(r.Url) == 0 {
+func Key(url string) string {
+	if len(url) == 0 {
 		return ""
 	}
 	exp := regexp.MustCompile(`^http.*watch\?v\=`)
-	if exp.MatchString(r.Url) {
-		return exp.ReplaceAllString(r.Url, "")
+	if exp.MatchString(url) {
+		return exp.ReplaceAllString(url, "")
 	}
-	return r.Url
+	return url
 }

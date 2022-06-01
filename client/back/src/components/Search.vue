@@ -104,8 +104,8 @@
                 <v-img :src="done.thumbnail"></v-img>
               </v-list-item-avatar>
               <v-list-item-content>
-                <v-list-item-title v-text="done.req.tag.title"></v-list-item-title>
-                <v-list-item-subtitle v-text="done.req.tag.artist"></v-list-item-subtitle>
+                <v-list-item-title v-text="done.tag.title"></v-list-item-title>
+                <v-list-item-subtitle v-text="done.tag.artist"></v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
                 <v-btn icon>
@@ -277,14 +277,14 @@ export default {
     },
     onItemSelected(done) {
       console.log({ done });
-      this.url = done.req.url;
-      this.title = done.req.tag.title;
-      this.artist = done.req.tag.artist;
-      this.album = done.req.tag.album;
-      this.genre = done.req.tag.genre;
+      this.url = done.url;
+      this.title = done.tag.title;
+      this.artist = done.tag.artist;
+      this.album = done.tag.album;
+      this.genre = done.tag.genre;
     },
     download(done, movie) {
-      const title = done.req.tag.title;
+      const title = done.tag.title;
       let url = done.audio;
       if (movie) {
         url = done.movie;

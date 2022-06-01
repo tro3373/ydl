@@ -9,23 +9,27 @@ import (
 )
 
 type Res struct {
-	Req       *request.Req `json:"req"`
-	Thumbnail string       `json:"thumbnail"`
-	Movie     string       `json:"movie"`
-	Audio     string       `json:"audio"`
-	MovieSize int64        `json:"movieSize"`
-	AudioSize int64        `json:"audioSize"`
+	Url       string      `json:"url" binding:"required"`
+	Tag       request.Tag `json:"tag"`
+	CreatedAt string      `json:"createdAt"`
+	Thumbnail string      `json:"thumbnail"`
+	Movie     string      `json:"movie"`
+	Audio     string      `json:"audio"`
+	MovieSize int64       `json:"movieSize"`
+	AudioSize int64       `json:"audioSize"`
 }
 
 func NewRes(task worker.Task) Res {
 	workDir := task.Ctx.WorkDir
-	thumbnail := toResourcePath(workDir, task.PathThumbnail)
-	movie := toResourcePath(workDir, task.PathMovie)
-	audio := toResourcePath(workDir, task.PathAudio)
-	movieSize, _ := util.GetFileSize(task.PathMovie)
-	audioSize, _ := util.GetFileSize(task.PathAudio)
+	thumbnail := toResourcePath(workDir, task.TaskPath.Thumbnail)
+	movie := toResourcePath(workDir, task.TaskPath.Movie)
+	audio := toResourcePath(workDir, task.TaskPath.Audio)
+	movieSize, _ := util.GetFileSize(task.TaskPath.Movie)
+	audioSize, _ := util.GetFileSize(task.TaskPath.Audio)
 	res := Res{
-		Req:       task.Req,
+		Url:       task.Url,
+		Tag:       task.Tag,
+		CreatedAt: task.CreatedAt,
 		Thumbnail: thumbnail,
 		Movie:     movie,
 		Audio:     audio,

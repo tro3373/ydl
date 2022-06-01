@@ -50,12 +50,13 @@ func StartBatch(ctx worker.Ctx) {
 		fmt.Println("New Watcher Error", err)
 		os.Exit(1)
 	}
-	fmt.Println("==> Watching", ctx.QueueDir, "..")
 
 	defer watcher.Close()
 	done := make(chan bool)
 	go dog(watcher, ctx)
-	if err := watcher.Add(ctx.QueueDir); err != nil {
+
+	fmt.Println("==> Watching", ctx.WorkDirs.Queue, "..")
+	if err := watcher.Add(ctx.WorkDirs.Queue); err != nil {
 		fmt.Println("Failed to watcher.Add", err)
 	}
 	<-done

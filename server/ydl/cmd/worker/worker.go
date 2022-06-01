@@ -1,7 +1,8 @@
 package worker
 
 import (
-	"fmt"
+	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
@@ -13,30 +14,69 @@ func Start(ctx Ctx, event fsnotify.Event) {
 		util.LogWarn("=> Already tasks running")
 		return
 	}
-	touchTaskRunning(ctx)
-	msgs := []interface{}{"Success to execute tasks!"}
+	err := touchTaskRunning(ctx)
+	if err != nil {
+		return
+	}
+
+	msg := "=> Success to execute all tasks!"
 	defer func() {
 		rmTaskRunning(ctx)
-		fmt.Println(msgs...)
+		util.LogInfo(msg)
 	}()
-	err := startTasks(ctx)
+	err = startTasks(ctx)
 	if err != nil {
-		msgs = []interface{}{"Failed to execute tasks..", err}
+		msg = "=> Failed task exist.."
 	}
 }
 
+func getTasksRunningFile(ctx Ctx) string {
+	return path.Join(ctx.WorkDir, ".tasks_running")
+}
+
+func isTaskRunning(ctx Ctx) bool {
+	return util.Exists(getTasksRunningFile(ctx))
+}
+
+func touchTaskRunning(ctx Ctx) error {
+	file := getTasksRunningFile(ctx)
+	if err := util.Touch(file); err != nil {
+		util.LogError("Failed to touch", file, err)
+		return err
+	}
+	return nil
+}
+
+func rmTaskRunning(ctx Ctx) error {
+	file := getTasksRunningFile(ctx)
+	if err := os.Remove(file); err != nil {
+		util.LogError("Failed to remove", file, err)
+		return err
+	}
+	return nil
+}
+
+func cleanTaskRunning(ctx Ctx) error {
+	if !isTaskRunning(ctx) {
+		return nil
+	}
+	return rmTaskRunning(ctx)
+}
+
 func startTasks(ctx Ctx) error {
-	jsons, err := findJsons(ctx.QueueDir)
+	jsons, err := findJsons(ctx.WorkDirs.Queue)
 	if err != nil {
+		util.LogError("Failed to findJson", err)
 		return err
 	}
 	for _, json := range jsons {
-		err := handleJson(ctx, json)
-		if err != nil {
-			return err
+		handleJsonErr := handleJson(ctx, json)
+		if handleJsonErr != nil {
+			util.LogError("Failed to handle json ", json, err)
+			err = handleJsonErr
 		}
 	}
-	return nil
+	return err
 }
 
 func findJsons(dir string) ([]string, error) {
@@ -48,7 +88,7 @@ func handleJson(ctx Ctx, jsonPath string) error {
 	if err != nil {
 		return err
 	}
-	util.LogInfo("=> Starting New Task!", task.String())
+	util.LogInfo("=> Start New Task!", task.String())
 
 	if !task.HasMovie() {
 		err = StartDownloadMovie(task)
@@ -62,5 +102,11 @@ func handleJson(ctx Ctx, jsonPath string) error {
 		return err
 	}
 
-	return task.Done()
+	err = task.Done()
+	if err != nil {
+		util.LogError("=> Task failed..", task.String())
+		return err
+	}
+	util.LogInfo("=> Task Done!", task.String())
+	return err
 }

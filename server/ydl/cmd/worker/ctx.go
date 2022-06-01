@@ -8,14 +8,22 @@ import (
 )
 
 type Ctx struct {
-	WorkDir         string `json:"workDir"`
-	LibDir          string `json:"libDir"`
-	QueueDir        string `json:"queueDir"`
-	DoingDir        string `json:"doingDir"`
-	DoneDir         string `json:"doneDir"`
-	DownloadLibRepo string `json:"DownloadLibRepo"`
-	DownloadLibName string `json:"DownloadLibName"`
-	DownloadLibSums string `json:"DownloadLibSums"`
+	WorkDir     string      `json:"work"`
+	WorkDirs    WorkDirs    `json:"workDirs"`
+	DownloadLib DownloadLib `json:"downloadLib"`
+}
+
+type WorkDirs struct {
+	Lib   string `json:"lib"`
+	Queue string `json:"queue"`
+	Doing string `json:"doing"`
+	Done  string `json:"done"`
+}
+
+type DownloadLib struct {
+	Repo string `json:"repo"`
+	Name string `json:"name"`
+	Sums string `json:"sums"`
 }
 
 func NewCtx(args []string) (Ctx, error) {
@@ -23,17 +31,23 @@ func NewCtx(args []string) (Ctx, error) {
 	if err != nil {
 		return Ctx{}, err
 	}
+	workDirs := WorkDirs{
+		Lib:   createDirIfNotExist(workDir, "lib"),
+		Queue: createDirIfNotExist(workDir, "queue"),
+		Doing: createDirIfNotExist(workDir, "doing"),
+		Done:  createDirIfNotExist(workDir, "done"),
+	}
+	downloadLib := DownloadLib{
+		// Repo: "ytdl-org/youtube-dl",
+		// Name: "youtube-dl",
+		Repo: "yt-dlp/yt-dlp",
+		Name: "yt-dlp",
+		Sums: "SHA2-256SUMS",
+	}
 	ctx := Ctx{
-		WorkDir:         createDirIfNotExist(workDir, ""),
-		LibDir:          createDirIfNotExist(workDir, "lib"),
-		QueueDir:        createDirIfNotExist(workDir, "queue"),
-		DoingDir:        createDirIfNotExist(workDir, "doing"),
-		DoneDir:         createDirIfNotExist(workDir, "done"),
-		DownloadLibRepo: "yt-dlp/yt-dlp",
-		DownloadLibName: "yt-dlp",
-		DownloadLibSums: "SHA2-256SUMS",
-		// DownloadLibRepo: "ytdl-org/youtube-dl",
-		// DownloadLibName: "youtube-dl",
+		WorkDir:     createDirIfNotExist(workDir, ""),
+		WorkDirs:    workDirs,
+		DownloadLib: downloadLib,
 	}
 	err = ctx.Clean()
 	return ctx, err
@@ -66,25 +80,13 @@ func createDirIfNotExist(targetDirPath, subDir string) string {
 }
 
 func (ctx Ctx) Clean() error {
-	cleanTaskRunning(ctx)
-
-	// fmt.Println("==> Cleaning", ctx.DoingDir)
-	// // TODO duplicate with NewCtx doingDir
-	// err := os.RemoveAll(ctx.DoingDir)
-	// if err != nil {
-	// 	return err
-	// }
-	// err = os.MkdirAll(ctx.DoingDir, 0775)
-	// if err != nil {
-	// 	return err
-	// }
-	return nil
+	return cleanTaskRunning(ctx)
 }
 
 func (ctx Ctx) GetDoneDir(key string) string {
-	return filepath.Join(ctx.DoneDir, key)
+	return filepath.Join(ctx.WorkDirs.Done, key)
 }
 
 func (ctx Ctx) GetDoingDir(key string) string {
-	return filepath.Join(ctx.DoingDir, key)
+	return filepath.Join(ctx.WorkDirs.Doing, key)
 }

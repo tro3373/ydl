@@ -15,15 +15,22 @@ import (
 )
 
 type Task struct {
-	Ctx           Ctx          `json:"ctx"`
-	Req           *request.Req `json:"req"`
-	PathDoingDir  string       `json:"pathDoingDir"`
-	PathDoneDir   string       `json:"pathDoneDir"`
-	PathReqJson   string       `json:"pathReqJson"`
-	PathInfoJson  string       `json:"pathInfoJson"`
-	PathThumbnail string       `json:"pathThumbnail"`
-	PathMovie     string       `json:"pathMovie"`
-	PathAudio     string       `json:"pathAudio"`
+	Ctx       Ctx         `json:"ctx"`
+	TaskPath  TaskPath    `json:"taskPath"`
+	Url       string      `json:"url" binding:"required"`
+	Tag       request.Tag `json:"tag"`
+	Uuids     []string    `json:"uuids"`
+	CreatedAt string      `json:"createdAt"`
+}
+
+type TaskPath struct {
+	Doing     string `json:"doing"`
+	Done      string `json:"done"`
+	ReqJson   string `json:"reqJson"`
+	InfoJson  string `json:"infoJson"`
+	Thumbnail string `json:"thumbnail"`
+	Movie     string `json:"movie"`
+	Audio     string `json:"audio"`
 }
 
 func NewTask(ctx Ctx, jsonPath string) (*Task, error) {
@@ -42,16 +49,20 @@ func newTaskInner(ctx Ctx, jsonPath string, forQueue bool) (*Task, error) {
 	if err != nil {
 		return &task, err
 	}
-	task.Req = req
-	key := req.Key()
+	task.Uuids = append(task.Uuids, req.Uuid)
+	task.CreatedAt = req.CreatedAt
+	task.Url = req.Url
+	task.Tag = req.Tag
 
-	task.PathDoneDir = ctx.GetDoneDir(key)
-	findTargetDir := task.PathDoneDir
+	key := request.Key(req.Url)
+
+	task.TaskPath.Done = ctx.GetDoneDir(key)
+	findTargetDir := task.TaskPath.Done
 
 	doingDir := ctx.GetDoingDir(key)
-	task.PathDoingDir = doingDir
+	task.TaskPath.Doing = doingDir
 	if util.Exists(doingDir) {
-		findTargetDir = task.PathDoneDir
+		findTargetDir = task.TaskPath.Done
 	} else {
 		if forQueue {
 			os.MkdirAll(doingDir, 0775)
@@ -61,9 +72,9 @@ func newTaskInner(ctx Ctx, jsonPath string, forQueue bool) (*Task, error) {
 	if err != nil {
 		return &task, err
 	}
-	task.PathReqJson = filepath.Join(doingDir, "req.json")
+	task.TaskPath.ReqJson = filepath.Join(doingDir, "req.json")
 	if forQueue {
-		err = os.Rename(jsonPath, task.PathReqJson)
+		err = os.Rename(jsonPath, task.TaskPath.ReqJson)
 		if err != nil {
 			return &task, err
 		}
@@ -76,7 +87,7 @@ func (task *Task) String() string {
 }
 
 func (task *Task) Key() string {
-	return task.Req.Key()
+	return request.Key(task.Url)
 }
 
 func (task *Task) readJson(jsonPath string) (*request.Req, error) {
@@ -101,21 +112,21 @@ func (task *Task) readDirHandler(dir, name string) error {
 	fmt.Println("==> readDirHandler: handling.. ", fullPath)
 	switch name {
 	case "req.json":
-		task.PathReqJson = fullPath
+		task.TaskPath.ReqJson = fullPath
 	case "src.info.json":
-		task.PathInfoJson = fullPath
+		task.TaskPath.InfoJson = fullPath
 	case "src.jpg", "src.png", "src.webp":
 		fmt.Println("==> readDirHandler: set jpg. ")
-		task.PathThumbnail = fullPath
+		task.TaskPath.Thumbnail = fullPath
 	case "src.mp3":
-		task.PathAudio = fullPath
+		task.TaskPath.Audio = fullPath
 	default:
 		if strings.HasPrefix(name, "src") {
-			fmt.Println("==> readDirHandler: set movie. ", task.PathMovie)
-			if len(task.PathMovie) > 0 {
+			fmt.Println("==> readDirHandler: set movie. ", task.TaskPath.Movie)
+			if len(task.TaskPath.Movie) > 0 {
 				return nil
 			}
-			task.PathMovie = fullPath
+			task.TaskPath.Movie = fullPath
 			task.setPathAudioFromPathMovieIfNeeded()
 		}
 	}
@@ -124,28 +135,28 @@ func (task *Task) readDirHandler(dir, name string) error {
 }
 
 func (task *Task) setPathAudioFromPathMovieIfNeeded() {
-	if len(task.PathAudio) > 0 {
+	if len(task.TaskPath.Audio) > 0 {
 		return
 	}
-	movie := task.PathMovie
+	movie := task.TaskPath.Movie
 	dir := filepath.Dir(movie)
 	ext := filepath.Ext(movie)
 	name := filepath.Base(movie[:len(movie)-len(ext)])
-	task.PathAudio = filepath.Join(dir, name) + ".mp3"
+	task.TaskPath.Audio = filepath.Join(dir, name) + ".mp3"
 }
 
 func (task *Task) genTitleFromInfoIfEnable() {
-	if len(task.PathInfoJson) == 0 {
+	if len(task.TaskPath.InfoJson) == 0 {
 		return
 	}
-	dir := filepath.Dir(task.PathInfoJson)
+	dir := filepath.Dir(task.TaskPath.InfoJson)
 	matches, _ := filepath.Glob(filepath.Join(dir, "*.title"))
 	if len(matches) > 0 {
 		return
 	}
-	raw, err := ioutil.ReadFile(task.PathInfoJson)
+	raw, err := ioutil.ReadFile(task.TaskPath.InfoJson)
 	if err != nil {
-		fmt.Println("Failed to read info json.", task.PathInfoJson, err)
+		fmt.Println("Failed to read info json.", task.TaskPath.InfoJson, err)
 		return
 	}
 	var info interface{}
@@ -156,23 +167,26 @@ func (task *Task) genTitleFromInfoIfEnable() {
 }
 
 func (task *Task) HasMovie() bool {
-	return len(task.PathMovie) > 0 && util.Exists(task.PathMovie)
+	return len(task.TaskPath.Movie) > 0 && util.Exists(task.TaskPath.Movie)
 }
 func (task *Task) HasAudio() bool {
-	return len(task.PathAudio) > 0 && util.Exists(task.PathAudio)
+	return len(task.TaskPath.Audio) > 0 && util.Exists(task.TaskPath.Audio)
 }
 
 func (task *Task) Done() error {
-	doingDir := task.PathDoingDir
-	if !util.Exists(task.PathDoneDir) {
-		return os.Rename(doingDir, task.PathDoneDir)
+	doingDir := task.TaskPath.Doing
+	if !util.Exists(task.TaskPath.Done) {
+		err := os.MkdirAll(doingDir, 0775)
+		if err != nil {
+			return err
+		}
 	}
 	err := util.ReadDir(doingDir, task.RenameDoing2DoneHandler)
 	if err != nil {
 		return err
 	}
 
-	err = task.findTargetFile(task.PathDoneDir)
+	err = task.findTargetFile(task.TaskPath.Done)
 	if err != nil {
 		return err
 	}
@@ -197,7 +211,7 @@ func (task *Task) save() error {
 	if err != nil {
 		return err
 	}
-	dst := filepath.Join(task.PathDoneDir, "task.json")
+	dst := filepath.Join(task.TaskPath.Done, "task.json")
 	return ioutil.WriteFile(dst, data, 0644)
 }
 

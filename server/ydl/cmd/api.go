@@ -64,7 +64,7 @@ func StartApi(ctx worker.Ctx) {
 		uuid := c.Request.Header.Get("x-uuid")
 		var key = c.Query("key")
 		logger.Info("[INFO] ==> ", zap.String("uuid", uuid), zap.String("key", key))
-		files, err := findJsons(ctx.DoneDir, key)
+		files, err := findJsons(ctx.WorkDirs.Done, key)
 		if err != nil {
 			logger.Error("[ERROR] ==> Failed to find jsons.", zap.String("Error:", err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
@@ -88,7 +88,7 @@ func StartApi(ctx worker.Ctx) {
 			return
 		}
 		req.Uuid = c.Request.Header.Get("x-uuid")
-		err := saveRequest(ctx.QueueDir, req)
+		err := saveRequest(ctx.WorkDirs.Queue, req)
 		if err != nil {
 			logger.Error("[ERROR] ==> Failed to save request.", zap.String("Error:", err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
@@ -123,19 +123,19 @@ func readJsons(files []string, uuid string) ([]response.Res, error) {
 		}
 		var task worker.Task
 		json.Unmarshal(raw, &task)
-		if task.Req.Uuid != uuid {
+		if !util.Contains(task.Uuids, uuid) {
 			continue
 		}
 		reses = append(reses, response.NewRes(task))
 	}
 	sort.Slice(reses, func(i, j int) bool {
-		return reses[i].Req.CreatedAt > reses[j].Req.CreatedAt
+		return reses[i].CreatedAt > reses[j].CreatedAt
 	})
 	return reses, nil
 }
 
 func saveRequest(dstRootDir string, req request.Req) error {
-	key := req.Key()
+	key := request.Key(req.Url)
 
 	timestamp := time.Now().Format("20060102_150405")
 	req.CreatedAt = timestamp

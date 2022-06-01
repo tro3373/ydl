@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
+	"github.com/tro3373/ydl/cmd/request"
 	"github.com/tro3373/ydl/cmd/util"
 )
 
@@ -29,8 +30,7 @@ func StartDownloadMovie(task *Task) error {
 
 func buildCmd(task *Task) (*exec.Cmd, string) {
 	ctx := task.Ctx
-	req := task.Req
-	key := req.Key()
+	key := request.Key(task.Url)
 
 	var args []string
 	args = append(args, "--write-thumbnail")
@@ -40,7 +40,7 @@ func buildCmd(task *Task) (*exec.Cmd, string) {
 	// format := "%(id)s_%(title)s.%(ext)s"
 	// format := "%(title)s.%(ext)s"
 	format := "src.%(ext)s"
-	dstd := filepath.Join(ctx.DoingDir, key)
+	dstd := filepath.Join(ctx.WorkDirs.Doing, key)
 	args = append(args, filepath.Join(dstd, format))
 
 	// // for audio output
@@ -50,7 +50,7 @@ func buildCmd(task *Task) (*exec.Cmd, string) {
 
 	args = append(args, key)
 
-	absYoutubeDl := filepath.Join(ctx.LibDir, ctx.DownloadLibName)
+	absYoutubeDl := filepath.Join(ctx.WorkDirs.Lib, ctx.DownloadLib.Name)
 	cmd := exec.Command(absYoutubeDl, args...)
 	cmd.Dir = dstd
 	cmd.Stdout = os.Stdout

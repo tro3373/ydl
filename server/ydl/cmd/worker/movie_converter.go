@@ -14,34 +14,35 @@ func StartConvert(task *Task) error {
 	util.LogInfo("Converting mp3 via ffmpeg..")
 
 	// ctx := task.Ctx
-	req := task.Req
+	tag := task.Tag
+	taskPath := task.TaskPath
 
 	if task.HasAudio() {
-		err := os.Remove(task.PathAudio)
+		err := os.Remove(taskPath.Audio)
 		if err != nil {
 			return err
 		}
 	}
 	var args []string
-	args = append(args, "-i", task.PathMovie)
-	if len(task.PathThumbnail) > 0 {
-		args = append(args, "-i", task.PathThumbnail, "-map", "0:a", "-map", "1:v")
+	args = append(args, "-i", taskPath.Movie)
+	if len(taskPath.Thumbnail) > 0 {
+		args = append(args, "-i", taskPath.Thumbnail, "-map", "0:a", "-map", "1:v")
 	}
-	args = appendMetaDataIfPresent(args, "title", req.Tag.Title)
-	args = appendMetaDataIfPresent(args, "artist", req.Tag.Artist)
-	album := req.Tag.Album
+	args = appendMetaDataIfPresent(args, "title", tag.Title)
+	args = appendMetaDataIfPresent(args, "artist", tag.Artist)
+	album := tag.Album
 	if len(album) == 0 {
-		album = req.Tag.Title
+		album = tag.Title
 	}
 	args = appendMetaDataIfPresent(args, "album", album)
-	genre := getGenre(req.Tag.Genre)
+	genre := getGenre(tag.Genre)
 	args = appendMetaDataIfPresent(args, "genre", genre)
 
-	args = append(args, task.PathAudio)
+	args = append(args, taskPath.Audio)
 
 	util.LogInfo("==> Executing: ffmpeg", args)
 	cmd := exec.Command("ffmpeg", args...)
-	cmd.Dir = task.PathDoingDir
+	cmd.Dir = taskPath.Doing
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
@@ -60,7 +61,7 @@ func appendMetaDataIfPresent(args []string, key, val string) []string {
 }
 
 func getGenre(genre string) string {
-	// genre := req.Tag.Genre
+	// genre := tag.Genre
 	f := "Favorite artist of "
 	fw := f + "West"
 	fj := f + "Japan"
