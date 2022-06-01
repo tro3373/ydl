@@ -99,7 +99,11 @@
           <!-- <v-list subheader two-line> -->
           <v-list two-line>
             <!-- <v-subheader inset>Folders</v-subheader> -->
-            <v-list-item v-for="done in doneList" :key="done.url" @click="onItemSelected(done)">
+            <v-list-item
+              v-for="done in doneList"
+              :key="done.url"
+              @click.stop="onItemSelected(done)"
+            >
               <v-list-item-avatar size="80" width="160" rounded>
                 <v-img :src="done.thumbnail"></v-img>
               </v-list-item-avatar>
@@ -109,13 +113,13 @@
               </v-list-item-content>
               <v-list-item-action>
                 <v-btn icon>
-                  <v-icon @click="download(done, 1)" color="red">mdi-movie</v-icon>
+                  <v-icon @click.stop="download(done, 1)" color="red">mdi-movie</v-icon>
                 </v-btn>
                 <div class="v-icon notranslate mdi theme--light" style="font-size: 0.2rem;">
                   {{ humanSize(done.movieSize) }}
                 </div>
                 <v-btn icon>
-                  <v-icon @click="download(done, 0)" color="red">mdi-music</v-icon>
+                  <v-icon @click.stop="download(done, 0)" color="red">mdi-music</v-icon>
                 </v-btn>
                 <div class="v-icon notranslate mdi theme--light" style="font-size: 0.2rem;">
                   {{ humanSize(done.audioSize) }}
