@@ -151,6 +151,7 @@ import _ from 'lodash';
 import qs from 'query-string';
 import Player from '@/components/Player.vue';
 import client from '@/api/client.js';
+import youtubeApilient from '@/api/youtubeApiClient.js';
 import Const from '../constants/constants.js';
 const { mapActions: mapActionsDone, mapGetters: mapGettersDone } = createNamespacedHelpers('done');
 export default {
@@ -250,7 +251,7 @@ export default {
       if (!this.youtubeId || this.oembedGuard) {
         return;
       }
-      const res = await client.youtubeOembedInfo(this.youtubeId);
+      const res = await youtubeApilient.getOembedInfo(this.youtubeId);
       this.title = res.title;
       this.artist = res.author_name;
       this.album = res.author_name;

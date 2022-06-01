@@ -3,18 +3,12 @@
 import axios from 'axios';
 import FormData from 'form-data';
 
-import Const from '../constants/constants.js';
 import util from '../util/util.js';
 
 export default class BaseClient {
   constructor(name) {
     this.name = name;
-    let uuid = localStorage.getItem(Const.LOCAL_STRAGE_KEY.UUID);
-    if (!uuid) {
-      uuid = util.uuid();
-      localStorage.setItem(Const.LOCAL_STRAGE_KEY.UUID, uuid);
-    }
-    this.defaultHeaders = { 'x-uuid': uuid };
+    this.defaultHeaders = {};
   }
 
   setDefaultHeaders(headers) {
