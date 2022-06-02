@@ -1,11 +1,10 @@
-FROM golang:1.18.0-alpine3.15
+FROM golang:1.18-bullseye
 
-ARG PKGS
-
-RUN deps="git curl ffmpeg python3 libc6-compat" && \
-    set -euxo pipefail && \
-    apk update && \
-    apk add -q --progress --update --no-cache ${deps} && \
+RUN deps="git curl ffmpeg python3" && \
+    set -eux && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends ${deps} && \
+    rm -rf /var/lib/apt/lists/* && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     go install github.com/cosmtrek/air@latest
 

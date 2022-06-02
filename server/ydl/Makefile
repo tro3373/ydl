@@ -1,53 +1,35 @@
-# @see
-# https://qiita.com/Syoitu/items/8e7e3215fb7ac9dabc3a
-# https://qiita.com/keitakn/items/f46347f871083356149b
+SHELL=/bin/bash
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(patsubst %/,%,$(dir $(mkfile_path)))
 name := $(shell head -1 $(current_dir)/go.mod|sed -e 's,^.*/,,g')
-version := v0.0.1
 
 .DEFAULT_GOAL := run
 
 depends_cmds := go
-.PHONY: check
 check:
 	@for cmd in ${depends_cmds}; do command -v $$cmd >&/dev/null || (echo "No $$cmd command" && exit 1); done
 
-.PHONY: deps
-deps:
-	@go list -m all
-
-.PHONY: tidy
-tidy:
-	@go mod tidy
-
-.PHONY: build
-build: check
-	@env GOOS=linux go build -ldflags="-s -w"
-.PHONY: build-image
-build-image:
-	@$(MAKE) -f ../../Makefile build-image app
-
-.PHONY: clean
 clean:
 	@[[ -e $(name) ]] && rm -rfv $(name)
 
-.PHONY: run
-run:
+run: check clean
 	@go run ./main.go
 
-.PHONY: air
-air:
-	@go run ./main.go
+build: check clean
+	@env GOOS=linux go build -ldflags="-s -w"
 
-.PHONY: curl_get
+deps:
+	@go list -m all
+
+tidy:
+	@go mod tidy
+
 curl_get:
 	@curl \
 		-fSsL \
 		-H 'Content-Type: application/json' \
 		http://127.0.0.1:3000/api
 
-.PHONY: curl_post
 curl_post:
 	@curl \
 		-fSsL \

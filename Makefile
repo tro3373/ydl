@@ -1,34 +1,44 @@
 CONTAINER_app=ydl
 CONTAINER_ngx=nginx
+CONTAINER_client=client
 STAGE=dev
 arg=
 
-#.PHONY: all test clean
+in_app := cd ./server/ydl
+in_client := cd ./client/back
+
 .DEFAULT_GOAL := up
 
-.PHONY: check_ydl
-check_ydl:
-	@cd ./server/ydl && $(MAKE) check
-
+check-app:
+	@${in_app} && make check
+check-client:
+	@${in_client} && make check
 depends_cmds := docker docker-compose
-.PHONY: check
-check: check_ydl
+check: check-app check-client
 	@for cmd in ${depends_cmds}; do command -v $$cmd >&/dev/null || (echo "No $$cmd command" && exit 1); done
 
-build-ydl:
-	@cd ./server/ydl && $(MAKE) build
-build_if_needed:
-	([[ ! -e ./server/ydl/ydl ]] || $(MAKE) build-ydl); \
-		$(MAKE) build-ydl
-build-client:
-	@cd ./client/back && $(MAKE) build-$(STAGE)
-build: build-ydl build-client
+clean-app:
+	@${in_app} && make clean
+clean-client:
+	@${in_client} && make clean
+clean: clean-app clean-client
 
-build-image: build
+
+build-image:
 	@docker-compose -f docker-compose.$(STAGE).yml build $(arg)
 
+build-app:
+	@docker-compose -f docker-compose.dev.yml \
+		run --rm -it \
+		app make build
+build-client:
+	@echo docker-compose -f docker-compose.dev.yml \
+		run --rm -it \
+		client make build STAGE=$(STAGE)
+build: build-app build-client
+
 up: start logsf
-start: check build_if_needed
+start: check
 	docker-compose -f docker-compose.$(STAGE).yml up -d $(arg)
 stop: down
 down:
@@ -43,6 +53,8 @@ logsf:
 
 console:
 	docker exec -it $(CONTAINER_app)-$(STAGE) /bin/sh --login
+console_client:
+	docker exec -it $(CONTAINER_client) /bin/bash --login
 console_nginx:
 	docker exec -it $(CONTAINER_ngx) /bin/bash --login
 reload-nginx:

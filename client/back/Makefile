@@ -1,29 +1,26 @@
-.DEFAULT_GOAL := local
+SHELL=/bin/bash
+STAGE=dev
 local_ip=$$(ip route |grep kernel |awk 'END {print $$NF}')
+
+.DEFAULT_GOAL := run
+
+depends_cmds := npm
+check:
+	@for cmd in ${depends_cmds}; do command -v $$cmd >&/dev/null || (echo "No $$cmd command" && exit 1); done
+
+clean:
+	@rm -rfv node_modules dist
 
 init:
 	@if [[ ! -e node_modules ]]; then \
 		echo "======================================= "; \
-		echo "==> Executing npm install .."; \
+		echo "==> Executing npm i.."; \
 		echo "======================================= "; \
-		yarn install; \
+		npm i; \
 	fi;
 
-local: init
-	@EXTERNAL_IP=$(local_ip) npm run serve-dev
+run: check init
+	@EXTERNAL_IP=$(local_ip) npm run serve-$(STAGE)
 
-build-dev: init
-	@npm run build-dev
-build-prd: init
-	@npm run build-prd
-
-# dev: init
-# 	@npm run build-dev
-#
-# prd: init
-# 	@npm run build
-#
-# deploy_dev:
-# 	@./bin/deploy
-# deploy_prd:
-# 	@./bin/deploy -p
+build: check init
+	@npm run build-$(STAGE)

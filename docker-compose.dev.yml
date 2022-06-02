@@ -17,8 +17,8 @@ services:
       - ./data/work:/usr/share/nginx/html/resource
     # links:
     #   - app
-    depends_on:
-      - app
+    # depends_on:
+    #   - app
   app:
     image: ydl-dev:1.0.0
     build:
@@ -38,7 +38,7 @@ services:
     tty:
       true
   client:
-    image: node:15.6.0-alpine3.10
+    image: node:16
     # build:
     #   context: ./client/back
     container_name: client
@@ -50,6 +50,6 @@ services:
       - ./client/back:/src
     ports:
       - 8080:8080
-    command: yarn serve-dev
-    depends_on:
-      - app
+    command: npm run serve-dev
+    # depends_on:
+    #   - app
