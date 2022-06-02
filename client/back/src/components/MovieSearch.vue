@@ -39,7 +39,7 @@
           </v-card-title>
 
           <v-card-text>
-            <player :url="embedUrl" />
+            <EmbedPlayer :url="embedUrl" />
           </v-card-text>
 
           <v-divider></v-divider>
@@ -109,13 +109,13 @@
                 <v-btn icon>
                   <v-icon @click.stop="download(done, 1)" color="red">mdi-movie</v-icon>
                 </v-btn>
-                <div class="v-icon notranslate mdi theme--light" style="font-size: 0.2rem;">
+                <div class="v-icon notranslate mdi theme--light" style="font-size: 0.2rem">
                   {{ humanSize(done.movieSize) }}
                 </div>
                 <v-btn icon>
                   <v-icon @click.stop="download(done, 0)" color="red">mdi-music</v-icon>
                 </v-btn>
-                <div class="v-icon notranslate mdi theme--light" style="font-size: 0.2rem;">
+                <div class="v-icon notranslate mdi theme--light" style="font-size: 0.2rem">
                   {{ humanSize(done.audioSize) }}
                 </div>
               </v-list-item-action>
@@ -131,15 +131,15 @@
 import { createNamespacedHelpers } from 'vuex';
 import _ from 'lodash';
 import qs from 'query-string';
-import Player from '@/components/Player.vue';
+import EmbedPlayer from '@/components/EmbedPlayer.vue';
 import client from '@/api/client.js';
 import youtubeApilient from '@/api/youtubeApiClient.js';
 import Const from '../constants/constants.js';
 const { mapActions: mapActionsDone, mapGetters: mapGettersDone } = createNamespacedHelpers('done');
 export default {
-  name: 'Search',
+  name: 'MovieSearch',
   components: {
-    Player,
+    EmbedPlayer,
   },
   watch: {
     loader() {

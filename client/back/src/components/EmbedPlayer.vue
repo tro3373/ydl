@@ -13,7 +13,7 @@
 
 <script>
 export default {
-  name: 'Player',
+  name: 'EmpbedPlayer',
   props: {
     url: String,
   },
