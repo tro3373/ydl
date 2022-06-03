@@ -10,74 +10,79 @@
             color="blue accent-4"
           ></v-progress-linear>
 
-          <v-card-title>
-            <!-- YouTube Downloader -->
-            <v-text-field
-              v-model="url"
-              :rules="rules.url"
-              label="youtube url or id を入力"
-              @focus="oembedGuard = false"
-              @blur="oembedGuard = true"
-              clearable
-            >
-            </v-text-field>
+          <v-form v-model="valid" ref="form">
+            <v-card-title>
+              <!-- YouTube Downloader -->
+              <v-text-field
+                v-model="url"
+                :rules="rules.url"
+                label="youtube url or id を入力"
+                @focus="oembedGuard = false"
+                @blur="oembedGuard = true"
+                clearable
+              >
+              </v-text-field>
 
-            <v-btn
-              color="red"
-              dark
-              class="ma-2 white--text"
-              href="https://www.youtube.com/"
-              target="_blank"
-            >
-              探しにいく
-              <v-icon>mdi-youtube</v-icon>
-            </v-btn>
+              <v-btn
+                color="red"
+                dark
+                class="ma-2 white--text"
+                href="https://www.youtube.com/"
+                target="_blank"
+              >
+                探しにいく
+                <v-icon>mdi-youtube</v-icon>
+              </v-btn>
 
-            <v-chip class="ma-2" input-value="true" filter v-if="youtubeId">
-              ID: {{ youtubeId }}
-            </v-chip>
-          </v-card-title>
+              <v-chip class="ma-2" input-value="true" filter v-if="youtubeId">
+                ID: {{ youtubeId }}
+              </v-chip>
+            </v-card-title>
 
-          <v-card-text>
-            <EmbedPlayer :url="embedUrl" />
-          </v-card-text>
+            <v-card-text>
+              <EmbedPlayer :url="embedUrl" />
+            </v-card-text>
 
-          <v-divider></v-divider>
+            <v-divider></v-divider>
 
-          <v-card-text>
-            <v-text-field v-model="title" :rules="rules.title" label="タイトル" clearable>
-            </v-text-field>
-            <v-text-field v-model="artist" :rules="rules.artist" label="アーティスト" clearable>
-            </v-text-field>
-            <v-text-field v-model="album" :rules="rules.album" label="アルバム" clearable>
-            </v-text-field>
-            <v-text-field v-model="genre" :rules="rules.genre" label="ジャンル" clearable>
-            </v-text-field>
-          </v-card-text>
+            <v-card-text>
+              <v-text-field v-model="title" :rules="rules.title" label="タイトル" clearable>
+              </v-text-field>
+              <v-text-field v-model="artist" :rules="rules.artist" label="アーティスト" clearable>
+              </v-text-field>
+              <v-text-field v-model="album" :rules="rules.album" label="アルバム" clearable>
+              </v-text-field>
+              <v-text-field v-model="genre" :rules="rules.genre" label="ジャンル" clearable>
+              </v-text-field>
+              <v-text-field v-model="uuid" :rules="rules.uuid" label="uuid" clearable>
+              </v-text-field>
+            </v-card-text>
 
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <!-- <v-radio-group v-model="type" row>            -->
-            <!--   <v-radio label="mp3" value="mp3"></v-radio> -->
-            <!--   <v-radio label="mp4" value="mp4"></v-radio> -->
-            <!-- </v-radio-group>                              -->
-            <!-- elevation="4" -->
-            <v-btn
-              class="ma-2"
-              color="error"
-              fab
-              :loading="loading"
-              :disabled="loading"
-              @click="submit"
-            >
-              <v-icon>mdi-coffee-to-go</v-icon>
-              <template v-slot:loader>
-                <span class="custom-loader">
-                  <v-icon light>mdi-cached</v-icon>
-                </span>
-              </template>
-            </v-btn>
-          </v-card-actions>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <!-- {{ valid }} -->
+              <!-- <v-radio-group v-model="type" row>            -->
+              <!--   <v-radio label="mp3" value="mp3"></v-radio> -->
+              <!--   <v-radio label="mp4" value="mp4"></v-radio> -->
+              <!-- </v-radio-group>                              -->
+              <!-- elevation="4" -->
+              <v-btn
+                class="ma-2"
+                color="error"
+                fab
+                :loading="loading"
+                :disabled="loading || !valid"
+                @click="submit"
+              >
+                <v-icon>mdi-coffee-to-go</v-icon>
+                <template v-slot:loader>
+                  <span class="custom-loader">
+                    <v-icon light>mdi-cached</v-icon>
+                  </span>
+                </template>
+              </v-btn>
+            </v-card-actions>
+          </v-form>
         </v-card>
       </v-flex>
 
@@ -132,6 +137,7 @@ import { createNamespacedHelpers } from 'vuex';
 import _ from 'lodash';
 import qs from 'query-string';
 import EmbedPlayer from '@/components/EmbedPlayer.vue';
+import util from '../util/util.js';
 import client from '@/api/client.js';
 import youtubeApilient from '@/api/youtubeApiClient.js';
 import Const from '../constants/constants.js';
@@ -162,6 +168,11 @@ export default {
     youtubeId() {
       this.onYoutubeIdChanged();
     },
+    uuid() {
+      if (!this.uuid) return;
+      localStorage.setItem(Const.LOCAL_STRAGE_KEY.UUID, this.uuid);
+      this.getDoneList();
+    },
   },
   data() {
     const inputInit = {
@@ -174,13 +185,19 @@ export default {
     const input = JSON.parse(
       localStorage.getItem(Const.LOCAL_STRAGE_KEY.CACHE) || JSON.stringify(inputInit)
     );
+    const uuid = localStorage.getItem(Const.LOCAL_STRAGE_KEY.UUID) || util.uuid();
     return {
       ...input,
+      uuid,
       rules: {
         url: [
           () => {
-            const res = this.isValidId || 'Invalid id or url.';
-            return res;
+            return this.isValidId || 'Invalid id or url.';
+          },
+        ],
+        uuid: [
+          () => {
+            return !!this.uuid || 'Input any your id';
           },
         ],
       },
@@ -188,6 +205,7 @@ export default {
       loader: null,
       loading: false,
       oembedGuard: true,
+      valid: this.valid,
     };
   },
   computed: {
@@ -220,10 +238,15 @@ export default {
     },
   },
   async mounted() {
-    await this.getDone();
+    // this.$refs.form.validate(); // for submit icon not enable
+    this.getDoneList();
   },
   methods: {
     ...mapActionsDone(['getDone']),
+    getDoneList() {
+      client.setUuid(this.uuid);
+      this.getDone();
+    },
     validate(id) {
       const _id = '' + id;
       const res = _id.match(/^[a-zA-Z0-9_-]{11}$/);

@@ -2,9 +2,6 @@
 
 ## prd
 ```
-make STAGE=dev build-image
-make STAGE=prd build
-make STAGE=prd build-image
 make STAGE=prd up
 ```
 
@@ -18,6 +15,7 @@ make up
 - request download progress?
 
 # DONE
+- override user id
 - show empty message if client v-list-item is empty
 - download movie,mp3 icon click propagation
 - oembed error

@@ -14,8 +14,9 @@ check-app:
 check-client:
 	@${in_client} && make check
 depends_cmds := docker docker-compose
-check: check-app check-client
+check:
 	@for cmd in ${depends_cmds}; do command -v $$cmd >&/dev/null || (echo "No $$cmd command" && exit 1); done
+check-all: check-app check-client check
 
 clean-app:
 	@${in_app} && make clean
@@ -37,8 +38,15 @@ build-client:
 		client make build STAGE=$(STAGE)
 build: build-app build-client
 
+prepare: check
+	(docker images |grep ydl-dev >&/dev/null || make STAGE=dev build-image) && \
+	if [[ ${STAGE} == "prd" ]]; then \
+		([[ ! -e ./client/back/dist || ! -e ./server/ydl/ydl ]] && make STAGE=prd build) && \
+		(docker images |grep 'ydl ' >&/dev/null || make STAGE=prd build-image) \
+	fi
+
 up: start logsf
-start:
+start: prepare
 	docker-compose -f docker-compose.$(STAGE).yml up -d $(arg)
 stop: down
 down:
@@ -52,7 +60,7 @@ logsf:
 	docker-compose -f docker-compose.$(STAGE).yml logs -f $(arg)
 
 console:
-	docker exec -it $(CONTAINER_app)-$(STAGE) /bin/sh --login
+	docker exec -it $(CONTAINER_app)-app /bin/sh --login
 console_client:
 	docker exec -it $(CONTAINER_client) /bin/bash --login
 console_nginx:

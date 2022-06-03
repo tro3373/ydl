@@ -2,7 +2,6 @@
 
 import Const from '../constants/constants.js';
 import BaseClient from './baseClient.js';
-import util from '../util/util.js';
 
 const ENDPOINT = {
   LIST: {
@@ -18,11 +17,9 @@ const ENDPOINT = {
 const ApiClient = class ApiClient extends BaseClient {
   constructor() {
     super('ApiClient');
-    let uuid = localStorage.getItem(Const.LOCAL_STRAGE_KEY.UUID);
-    if (!uuid) {
-      uuid = util.uuid();
-      localStorage.setItem(Const.LOCAL_STRAGE_KEY.UUID, uuid);
-    }
+  }
+
+  setUuid(uuid) {
     const headers = { 'x-uuid': uuid };
     this.setDefaultHeaders(headers);
   }
