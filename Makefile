@@ -32,7 +32,7 @@ build-app:
 		run --rm -it \
 		app make build
 build-client:
-	@echo docker-compose -f docker-compose.dev.yml \
+	@docker-compose -f docker-compose.dev.yml \
 		run --rm -it \
 		client make build STAGE=$(STAGE)
 build: build-app build-client
