@@ -127,23 +127,19 @@ func (task *Task) readDirHandler(dir, name string) error {
 			// 	return nil
 			// }
 			task.TaskPath.Movie = fullPath
-			// task.setPathAudioFromPathMovieIfNeeded()
 		}
 	}
 
 	return nil
 }
 
-// func (task *Task) setPathAudioFromPathMovieIfNeeded() {
-// 	if len(task.TaskPath.Audio) > 0 {
-// 		return
-// 	}
-// 	movie := task.TaskPath.Movie
-// 	dir := filepath.Dir(movie)
-// 	ext := filepath.Ext(movie)
-// 	name := filepath.Base(movie[:len(movie)-len(ext)])
-// 	task.TaskPath.Audio = filepath.Join(dir, name) + ".mp3"
-// }
+func (task *Task) setPathAudioFromPathMovie() {
+	movie := task.TaskPath.Movie
+	dir := filepath.Dir(movie)
+	ext := filepath.Ext(movie)
+	name := filepath.Base(movie[:len(movie)-len(ext)])
+	task.TaskPath.Audio = filepath.Join(dir, name) + ".mp3"
+}
 
 func (task *Task) genTitleFromInfoIfEnable() {
 	if len(task.TaskPath.InfoJson) == 0 {

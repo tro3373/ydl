@@ -13,7 +13,9 @@ func StartConvert(task *Task) error {
 
 	util.LogInfo("Converting mp3 via ffmpeg..")
 
-	// ctx := task.Ctx
+	if len(task.TaskPath.Audio) == 0 {
+		task.setPathAudioFromPathMovie()
+	}
 	tag := task.Tag
 	taskPath := task.TaskPath
 
