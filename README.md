@@ -2,7 +2,9 @@
 
 ## prd
 ```
-make build-image
+make STAGE=dev build-image
+make STAGE=prd build
+make STAGE=prd build-image
 make STAGE=prd up
 ```
 
