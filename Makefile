@@ -26,19 +26,23 @@ clean: clean-app clean-client
 
 
 build-image:
-	@docker-compose -f docker-compose.$(STAGE).yml build $(arg)
+	@echo "==> $(MAKECMDGOALS) $(STAGE)" && \
+	docker-compose -f docker-compose.$(STAGE).yml build $(arg)
 
 build-app:
-	@docker-compose -f docker-compose.dev.yml \
+	@echo "==> $(MAKECMDGOALS) $(STAGE)" && \
+	docker-compose -f docker-compose.dev.yml \
 		run --rm -it \
 		app make build
 build-client:
-	@docker-compose -f docker-compose.dev.yml \
+	@echo "==> $(MAKECMDGOALS) $(STAGE)" && \
+	docker-compose -f docker-compose.dev.yml \
 		run --rm -it \
 		client make build STAGE=$(STAGE)
 build: build-app build-client
 
 prepare: check
+	@echo "==> $(MAKECMDGOALS) $(STAGE)" && \
 	(docker images |grep ydl-dev >&/dev/null || make STAGE=dev build-image) && \
 	if [[ ${STAGE} == "prd" ]]; then \
 		([[ ! -e ./client/back/dist || ! -e ./server/ydl/ydl ]] && make STAGE=prd build) && \

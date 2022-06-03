@@ -10,7 +10,7 @@ check:
 	@for cmd in ${depends_cmds}; do command -v $$cmd >&/dev/null || (echo "No $$cmd command" && exit 1); done
 
 clean:
-	@[[ -e $(name) ]] && rm -rfv $(name)
+	@[[ -e $(name) ]] && rm -rfv $(name) || :
 
 run: check clean
 	@go run ./main.go
