@@ -2,7 +2,7 @@ version: '3.8'
 services:
   nginx:
     image: nginx
-    container_name: nginx
+    container_name: ydl-nginx
     restart: always
     ports:
       - 80:80
@@ -24,7 +24,7 @@ services:
     build:
       context: ./server/ydl
       dockerfile: Dockerfile.dev
-    container_name: ydl-dev
+    container_name: ydl-app
     restart: always
     environment:
       - TZ=Asia/Tokyo

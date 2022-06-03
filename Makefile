@@ -38,7 +38,7 @@ build-client:
 build: build-app build-client
 
 up: start logsf
-start: check
+start:
 	docker-compose -f docker-compose.$(STAGE).yml up -d $(arg)
 stop: down
 down:
