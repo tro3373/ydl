@@ -1,3 +1,17 @@
+# ydl
+
+## prd
+```
+make build-image
+make STAGE=prd up
+```
+
+## dev
+```
+make up
+```
+
+
 # TODO
 - request download progress?
 
