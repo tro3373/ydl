@@ -9,7 +9,7 @@ check:
 	@for cmd in ${depends_cmds}; do command -v $$cmd >&/dev/null || (echo "No $$cmd command" && exit 1); done
 
 clean:
-	@rm -rfv node_modules dist
+	@for d in node_modules dist; do if [[ -e $${d} ]]; then echo "==> Removing $${d}.." && rm -rf $${d}; fi done
 
 init:
 	@if [[ ! -e node_modules ]]; then \
