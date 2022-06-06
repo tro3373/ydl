@@ -93,29 +93,34 @@
 
           <v-list two-line>
             <v-list-item
-              v-for="requestResults in requestResults"
-              :key="requestResults.url"
-              @click.stop="onItemSelected(requestResults)"
+              v-for="rr in requestResults"
+              :key="rr.url"
+              :disabled="rr.doing"
+              @click.stop="onItemSelected(rr)"
             >
               <v-list-item-avatar size="80" width="160" rounded>
-                <v-img :src="requestResults.thumbnail"></v-img>
+                <v-img :src="rr.thumbnail"></v-img>
               </v-list-item-avatar>
               <v-list-item-content>
-                <v-list-item-title v-text="requestResults.tag.title"></v-list-item-title>
-                <v-list-item-subtitle v-text="requestResults.tag.artist"></v-list-item-subtitle>
+                <v-list-item-title v-text="rr.tag.title"></v-list-item-title>
+                <v-list-item-subtitle v-text="rr.tag.artist"></v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
                 <v-btn icon>
-                  <v-icon @click.stop="download(requestResults, 1)" color="red">mdi-movie</v-icon>
+                  <v-icon :disabled="rr.doing" @click.stop="download(rr, 1)" color="red"
+                    >mdi-movie</v-icon
+                  >
                 </v-btn>
                 <div class="v-icon notranslate mdi theme--light text-caption">
-                  {{ humanSize(requestResults.movieSize) }}
+                  {{ humanSize(rr.movieSize) }}
                 </div>
                 <v-btn icon>
-                  <v-icon @click.stop="download(requestResults, 0)" color="red">mdi-music</v-icon>
+                  <v-icon :disabled="rr.doing" @click.stop="download(rr, 0)" color="red"
+                    >mdi-music</v-icon
+                  >
                 </v-btn>
                 <div class="v-icon notranslate mdi theme--light text-caption">
-                  {{ humanSize(requestResults.audioSize) }}
+                  {{ humanSize(rr.audioSize) }}
                 </div>
               </v-list-item-action>
             </v-list-item>
