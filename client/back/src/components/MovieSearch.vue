@@ -99,7 +99,12 @@
               @click.stop="onItemSelected(rr)"
             >
               <v-list-item-avatar size="80" width="160" rounded>
-                <v-img :src="rr.thumbnail"></v-img>
+                <v-progress-circular
+                  indeterminate
+                  color="grey"
+                  v-show="!rr.thumbnail"
+                ></v-progress-circular>
+                <v-img :src="rr.thumbnail" v-show="rr.thumbnail"></v-img>
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title v-text="rr.tag.title"></v-list-item-title>
@@ -275,8 +280,6 @@ export default {
       if (!this.isValidId) {
         return;
       }
-      // const res = await client.list();
-      // console.log({ res });
       const res = await client.downloadRequest({
         url: this.youtubeId,
         tag: {
@@ -287,6 +290,13 @@ export default {
         },
       });
       console.log({ res });
+      // const settime
+      const intervalId = setInterval(() => {
+        const res = this.getRequestResults();
+        if (!res.find((r) => r.doing)) {
+          clearInterval(intervalId);
+        }
+      }, 10000);
     },
     onItemSelected(requestResults) {
       console.log({ requestResults });
