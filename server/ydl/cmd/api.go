@@ -64,17 +64,36 @@ func StartApi(ctx worker.Ctx) {
 		uuid := c.Request.Header.Get("x-uuid")
 		var key = c.Query("key")
 		logger.Info("[INFO] ==> ", zap.String("uuid", uuid), zap.String("key", key))
-		files, err := findJsons(ctx.WorkDirs.Done, key)
-		if err != nil {
-			logger.Error("[ERROR] ==> Failed to find jsons.", zap.String("Error:", err.Error()))
-			c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
-		}
-		jsons, err := readJsons(files, uuid)
-		if err != nil {
-			logger.Error("[ERROR] ==> Failed to read jsons.", zap.String("Error:", err.Error()))
+
+		handleErr := func(message string, err error) {
+			logger.Error(message, zap.String("Error:", err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
 		}
 
+		doingFiles, err := findJsons(ctx.WorkDirs.Doing, key)
+		if err != nil {
+			handleErr("[ERROR] ==> Failed to find doing jsons.", err)
+			return
+		}
+		doneFiles, err := findJsons(ctx.WorkDirs.Done, key)
+		if err != nil {
+			handleErr("[ERROR] ==> Failed to find done jsons.", err)
+			return
+		}
+
+		jsons, err := readJsons(doingFiles, uuid, true)
+		if err != nil {
+			handleErr("[ERROR] ==> Failed to read doing jsons.", err)
+			return
+		}
+		doneJsons, err := readJsons(doneFiles, uuid, false)
+		if err != nil {
+			handleErr("[ERROR] ==> Failed to read done jsons.", err)
+			return
+		}
+		for _, doneJson := range doneJsons {
+			jsons = append(jsons, doneJson)
+		}
 		c.JSON(http.StatusOK, gin.H{
 			"list": jsons,
 		})
@@ -113,9 +132,9 @@ func getJsonPath(dir, key string) string {
 	return filepath.Join(dir, fmt.Sprintf("%s.json", key))
 }
 
-func readJsons(files []string, uuid string) ([]response.Res, error) {
+func readJsons(doneFiles []string, uuid string, doing bool) ([]response.Res, error) {
 	var reses []response.Res
-	for _, file := range files {
+	for _, file := range doneFiles {
 		logger.Debug("[INFO] ==> ", zap.String("uuid", uuid), zap.String("file", file))
 		raw, err := ioutil.ReadFile(file)
 		if err != nil {
@@ -126,7 +145,7 @@ func readJsons(files []string, uuid string) ([]response.Res, error) {
 		if !util.Contains(task.Uuids, uuid) {
 			continue
 		}
-		reses = append(reses, response.NewRes(task))
+		reses = append(reses, response.NewRes(task, doing))
 	}
 	sort.Slice(reses, func(i, j int) bool {
 		return reses[i].CreatedAt > reses[j].CreatedAt

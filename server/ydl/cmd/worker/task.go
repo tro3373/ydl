@@ -78,6 +78,10 @@ func newTaskInner(ctx Ctx, jsonPath string, forQueue bool) (*Task, error) {
 		if err != nil {
 			return &task, err
 		}
+		err = task.save(false)
+		if err != nil {
+			return &task, err
+		}
 	}
 	return &task, nil
 }
@@ -187,7 +191,7 @@ func (task *Task) Done() error {
 	if err != nil {
 		return err
 	}
-	err = task.save()
+	err = task.save(true)
 	if err != nil {
 		return err
 	}
@@ -203,12 +207,16 @@ func (task *Task) Done() error {
 	return os.Remove(doingDir)
 }
 
-func (task *Task) save() error {
+func (task *Task) save(done bool) error {
 	data, err := json.MarshalIndent(task, "", "  ")
 	if err != nil {
 		return err
 	}
-	dst := filepath.Join(task.TaskPath.Done, "task.json")
+	dstd := task.TaskPath.Doing
+	if done {
+		dstd = task.TaskPath.Done
+	}
+	dst := filepath.Join(dstd, "task.json")
 	return ioutil.WriteFile(dst, data, 0644)
 }
 

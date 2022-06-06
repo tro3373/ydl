@@ -10,6 +10,7 @@ import (
 
 type Res struct {
 	Url       string      `json:"url" binding:"required"`
+	Doing     bool        `json:"doing"`
 	Tag       request.Tag `json:"tag"`
 	CreatedAt string      `json:"createdAt"`
 	Thumbnail string      `json:"thumbnail"`
@@ -19,7 +20,7 @@ type Res struct {
 	AudioSize int64       `json:"audioSize"`
 }
 
-func NewRes(task worker.Task) Res {
+func NewRes(task worker.Task, doing bool) Res {
 	workDir := task.Ctx.WorkDir
 	thumbnail := toResourcePath(workDir, task.TaskPath.Thumbnail)
 	movie := toResourcePath(workDir, task.TaskPath.Movie)
@@ -28,6 +29,7 @@ func NewRes(task worker.Task) Res {
 	audioSize, _ := util.GetFileSize(task.TaskPath.Audio)
 	res := Res{
 		Url:       task.Url,
+		Doing:     doing,
 		Tag:       task.Tag,
 		CreatedAt: task.CreatedAt,
 		Thumbnail: thumbnail,
@@ -43,5 +45,8 @@ func getFileSize() {
 }
 
 func toResourcePath(dirPath, filePath string) string {
+	if len(filePath) == 0 {
+		return ""
+	}
 	return fmt.Sprintf("/resource/%s", filePath[len(dirPath)+1:])
 }

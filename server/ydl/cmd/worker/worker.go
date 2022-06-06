@@ -26,7 +26,7 @@ func Start(ctx Ctx, event fsnotify.Event) {
 	}()
 	err = startTasks(ctx)
 	if err != nil {
-		msg = "=> Failed task exist.."
+		msg = "=> Some task was failed.."
 	}
 }
 
@@ -72,7 +72,7 @@ func startTasks(ctx Ctx) error {
 	for _, json := range jsons {
 		handleJsonErr := handleJson(ctx, json)
 		if handleJsonErr != nil {
-			util.LogError("Failed to handle json ", json, err)
+			util.LogError("Failed to handle json ", json, handleJsonErr)
 			err = handleJsonErr
 		}
 	}
