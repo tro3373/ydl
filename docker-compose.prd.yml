@@ -20,6 +20,11 @@ services:
     #   - app
     depends_on:
       - app
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
   app:
     image: ydl:1.0.0
     build:
@@ -34,5 +39,10 @@ services:
       - ./data/work:/root/work
     ports:
       - 3000:3000
-    tty:
-      true
+    # tty:
+    #   true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
