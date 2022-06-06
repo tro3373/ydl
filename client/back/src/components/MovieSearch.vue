@@ -108,13 +108,13 @@
                 <v-btn icon>
                   <v-icon @click.stop="download(done, 1)" color="red">mdi-movie</v-icon>
                 </v-btn>
-                <div class="v-icon notranslate mdi theme--light" style="font-size: 0.2rem">
+                <div class="v-icon notranslate mdi theme--light text-caption">
                   {{ humanSize(done.movieSize) }}
                 </div>
                 <v-btn icon>
                   <v-icon @click.stop="download(done, 0)" color="red">mdi-music</v-icon>
                 </v-btn>
-                <div class="v-icon notranslate mdi theme--light" style="font-size: 0.2rem">
+                <div class="v-icon notranslate mdi theme--light text-caption">
                   {{ humanSize(done.audioSize) }}
                 </div>
               </v-list-item-action>
