@@ -290,13 +290,14 @@ export default {
         },
       });
       console.log({ res });
-      // const settime
-      const intervalId = setInterval(() => {
-        const res = this.getRequestResults();
-        if (!res.find((r) => r.doing)) {
+      console.log('==> Start interval!');
+      const intervalId = setInterval(async () => {
+        await this.getRequestResults();
+        if (!this.requestResults.find((r) => r.doing)) {
+          console.log('==> Clear interval!');
           clearInterval(intervalId);
         }
-      }, 10000);
+      }, 5000);
     },
     onItemSelected(requestResults) {
       console.log({ requestResults });
