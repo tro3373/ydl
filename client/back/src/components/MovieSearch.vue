@@ -81,41 +81,41 @@
       </v-flex>
 
       <v-flex xs12 sm12 md8 class="pa-1">
-        <v-container fill-height v-if="!doneList.length">
+        <v-container fill-height v-if="!requestResults.length">
           <v-spacer></v-spacer>
           No Result
           <v-spacer></v-spacer>
         </v-container>
-        <v-card v-if="doneList.length">
+        <v-card v-if="requestResults.length">
           <v-toolbar color="primary" dark>
             <v-toolbar-title>Files</v-toolbar-title>
           </v-toolbar>
 
           <v-list two-line>
             <v-list-item
-              v-for="done in doneList"
-              :key="done.url"
-              @click.stop="onItemSelected(done)"
+              v-for="requestResults in requestResults"
+              :key="requestResults.url"
+              @click.stop="onItemSelected(requestResults)"
             >
               <v-list-item-avatar size="80" width="160" rounded>
-                <v-img :src="done.thumbnail"></v-img>
+                <v-img :src="requestResults.thumbnail"></v-img>
               </v-list-item-avatar>
               <v-list-item-content>
-                <v-list-item-title v-text="done.tag.title"></v-list-item-title>
-                <v-list-item-subtitle v-text="done.tag.artist"></v-list-item-subtitle>
+                <v-list-item-title v-text="requestResults.tag.title"></v-list-item-title>
+                <v-list-item-subtitle v-text="requestResults.tag.artist"></v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
                 <v-btn icon>
-                  <v-icon @click.stop="download(done, 1)" color="red">mdi-movie</v-icon>
+                  <v-icon @click.stop="download(requestResults, 1)" color="red">mdi-movie</v-icon>
                 </v-btn>
                 <div class="v-icon notranslate mdi theme--light text-caption">
-                  {{ humanSize(done.movieSize) }}
+                  {{ humanSize(requestResults.movieSize) }}
                 </div>
                 <v-btn icon>
-                  <v-icon @click.stop="download(done, 0)" color="red">mdi-music</v-icon>
+                  <v-icon @click.stop="download(requestResults, 0)" color="red">mdi-music</v-icon>
                 </v-btn>
                 <div class="v-icon notranslate mdi theme--light text-caption">
-                  {{ humanSize(done.audioSize) }}
+                  {{ humanSize(requestResults.audioSize) }}
                 </div>
               </v-list-item-action>
             </v-list-item>
@@ -135,7 +135,8 @@ import util from '../util/util.js';
 import client from '@/api/client.js';
 import youtubeApilient from '@/api/youtubeApiClient.js';
 import Const from '../constants/constants.js';
-const { mapActions: mapActionsDone, mapGetters: mapGettersDone } = createNamespacedHelpers('done');
+const { mapActions: mapActionsRequestResults, mapGetters: mapGettersRequestResults } =
+  createNamespacedHelpers('requestResults');
 export default {
   name: 'MovieSearch',
   components: {
@@ -165,7 +166,7 @@ export default {
     uuid() {
       if (!this.uuid) return;
       localStorage.setItem(Const.LOCAL_STRAGE_KEY.UUID, this.uuid);
-      this.getDoneList();
+      this.getRequestResultsWithUuid();
     },
   },
   data() {
@@ -203,7 +204,7 @@ export default {
     };
   },
   computed: {
-    ...mapGettersDone(['doneList']),
+    ...mapGettersRequestResults(['requestResults']),
     youtubeId() {
       const val = this.url;
       if (_.isEmpty(val)) return '';
@@ -233,13 +234,13 @@ export default {
   },
   async mounted() {
     // this.$refs.form.validate(); // for submit icon not enable
-    this.getDoneList();
+    this.getRequestResultsWithUuid();
   },
   methods: {
-    ...mapActionsDone(['getDone']),
-    getDoneList() {
+    ...mapActionsRequestResults(['getRequestResults']),
+    getRequestResultsWithUuid() {
       client.setUuid(this.uuid);
-      this.getDone();
+      this.getRequestResults();
     },
     validate(id) {
       const _id = '' + id;
@@ -282,19 +283,19 @@ export default {
       });
       console.log({ res });
     },
-    onItemSelected(done) {
-      console.log({ done });
-      this.url = done.url;
-      this.title = done.tag.title;
-      this.artist = done.tag.artist;
-      this.album = done.tag.album;
-      this.genre = done.tag.genre;
+    onItemSelected(requestResults) {
+      console.log({ requestResults });
+      this.url = requestResults.url;
+      this.title = requestResults.tag.title;
+      this.artist = requestResults.tag.artist;
+      this.album = requestResults.tag.album;
+      this.genre = requestResults.tag.genre;
     },
-    download(done, movie) {
-      const title = done.tag.title;
-      let url = done.audio;
+    download(requestResults, movie) {
+      const title = requestResults.tag.title;
+      let url = requestResults.audio;
       if (movie) {
-        url = done.movie;
+        url = requestResults.movie;
       }
       const ext = this.ext(url);
       url = `${url}?f=${title}.${ext}`;

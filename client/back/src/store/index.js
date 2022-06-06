@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { done } from './modules/done';
+import { requestResults } from './modules/requestResults.js';
 
 Vue.use(Vuex);
 
@@ -9,6 +9,6 @@ export default new Vuex.Store({
   mutations: {},
   actions: {},
   modules: {
-    done,
+    requestResults,
   },
 });
