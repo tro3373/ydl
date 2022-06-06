@@ -23,13 +23,7 @@
               >
               </v-text-field>
 
-              <v-btn
-                color="red"
-                dark
-                class="ma-2 white--text"
-                href="https://www.youtube.com/"
-                target="_blank"
-              >
+              <v-btn color="red" dark class="ma-2 white--text" @click="findInYoutube">
                 探しにいく
                 <v-icon>mdi-youtube</v-icon>
               </v-btn>
@@ -261,6 +255,14 @@ export default {
       this.artist = res.author_name;
       this.album = res.author_name;
       this.genre = '';
+    },
+    findInYoutube() {
+      let url = 'https://www.youtube.com';
+      let q = this.title || this.youtubeId;
+      if (!util.isEmpty(q)) {
+        url = `https://www.youtube.com/results?search_query=${q}`;
+      }
+      window.open(url, '_blank');
     },
     async submit() {
       this.loader = 'loading';
