@@ -4,8 +4,8 @@
       <v-flex xs12 sm12 md4 class="pa-1">
         <v-card>
           <v-progress-linear
-            :active="loading"
-            :indeterminate="loading"
+            :active="serverQueueing"
+            :indeterminate="true"
             top
             color="blue accent-4"
           ></v-progress-linear>
@@ -22,16 +22,38 @@
                 clearable
               >
               </v-text-field>
+            </v-card-title>
 
-              <v-btn color="red" dark class="ma-2 white--text" @click="findInYoutube">
-                探しにいく
-                <v-icon>mdi-youtube</v-icon>
-              </v-btn>
-
-              <v-chip class="ma-2" input-value="true" filter v-if="youtubeId">
+            <v-card-actions>
+              <v-chip class="ma-2" input-value="true" filter v-if="youtubeId" @click="seeInYoutube">
                 ID: {{ youtubeId }}
               </v-chip>
-            </v-card-title>
+              <v-spacer></v-spacer>
+              <v-btn class="ma-2" color="error" fab @click="findInYoutube">
+                <v-icon>mdi-magnify</v-icon>
+                <template v-slot:loader>
+                  <span class="custom-loader">
+                    <v-icon light>mdi-cached</v-icon>
+                  </span>
+                </template>
+              </v-btn>
+
+              <v-btn
+                class="ma-2"
+                color="error"
+                fab
+                :loading="serverQueueing"
+                :disabled="serverQueueing || !valid"
+                @click="submit"
+              >
+                <span class="material-icons">save</span>
+                <template v-slot:loader>
+                  <span class="custom-loader">
+                    <v-icon light>mdi-cached</v-icon>
+                  </span>
+                </template>
+              </v-btn>
+            </v-card-actions>
 
             <v-card-text>
               <EmbedPlayer :url="embedUrl" />
@@ -51,31 +73,6 @@
               <v-text-field v-model="uuid" :rules="rules.uuid" label="uuid" clearable>
               </v-text-field>
             </v-card-text>
-
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <!-- {{ valid }} -->
-              <!-- <v-radio-group v-model="type" row>            -->
-              <!--   <v-radio label="mp3" value="mp3"></v-radio> -->
-              <!--   <v-radio label="mp4" value="mp4"></v-radio> -->
-              <!-- </v-radio-group>                              -->
-              <!-- elevation="4" -->
-              <v-btn
-                class="ma-2"
-                color="error"
-                fab
-                :loading="loading"
-                :disabled="loading || !valid"
-                @click="submit"
-              >
-                <v-icon>mdi-coffee-to-go</v-icon>
-                <template v-slot:loader>
-                  <span class="custom-loader">
-                    <v-icon light>mdi-cached</v-icon>
-                  </span>
-                </template>
-              </v-btn>
-            </v-card-actions>
           </v-form>
         </v-card>
       </v-flex>
@@ -87,14 +84,20 @@
           <v-spacer></v-spacer>
         </v-container>
         <v-card v-if="requestResults.length">
-          <v-toolbar color="primary" dark>
-            <v-toolbar-title>Files</v-toolbar-title>
-          </v-toolbar>
+          <!-- <v-toolbar color="primary" dark>           -->
+          <!--   <v-toolbar-title>Files</v-toolbar-title> -->
+          <!-- </v-toolbar>                               -->
 
           <v-list two-line>
+            <v-progress-linear
+              :active="serverDoing"
+              :indeterminate="true"
+              top
+              color="blue accent-4"
+            ></v-progress-linear>
             <v-list-item
               v-for="rr in requestResults"
-              :key="rr.url"
+              :key="`${rr.url}.${rr.doing}`"
               :disabled="rr.doing"
               @click.stop="onItemSelected(rr)"
             >
@@ -153,12 +156,6 @@ export default {
     EmbedPlayer,
   },
   watch: {
-    loader() {
-      const l = this.loader;
-      this[l] = !this[l];
-      setTimeout(() => (this[l] = false), 3000);
-      this.loader = null;
-    },
     inputCache() {
       const data = {
         url: this.url,
@@ -207,8 +204,7 @@ export default {
         ],
       },
       // type: 'mp3',
-      loader: null,
-      loading: false,
+      serverQueueing: false,
       oembedGuard: true,
       valid: this.valid,
     };
@@ -219,6 +215,10 @@ export default {
       const val = this.url;
       if (_.isEmpty(val)) return '';
       if (this.validate(val)) return val;
+      if (val.match(/^http.*\/youtu.be\/.*/)) {
+        const _id = val.replace(/^http.*\/youtu.be\//, '');
+        if (this.validate(_id)) return _id;
+      }
       if (val.match(/^http.*\/embed\/.*/)) {
         const _id = val.replace(/^http.*\/embed\//, '');
         if (this.validate(_id)) return _id;
@@ -240,6 +240,9 @@ export default {
     },
     inputCache() {
       return `${this.url}${this.title}${this.artist}${this.album}${this.genre}`;
+    },
+    serverDoing() {
+      return !!this.requestResults.find((r) => r.doing);
     },
   },
   async mounted() {
@@ -267,6 +270,13 @@ export default {
       this.album = res.author_name;
       this.genre = '';
     },
+    seeInYoutube() {
+      if (util.isEmpty(this.youtubeId)) {
+        return;
+      }
+      let url = `https://www.youtube.com/watch?v=${this.youtubeId}`;
+      window.open(url, '_blank');
+    },
     findInYoutube() {
       let url = 'https://www.youtube.com';
       let q = this.title || this.youtubeId;
@@ -276,7 +286,7 @@ export default {
       window.open(url, '_blank');
     },
     async submit() {
-      this.loader = 'loading';
+      this.serverQueueing = true;
       if (!this.isValidId) {
         return;
       }
@@ -293,25 +303,27 @@ export default {
       console.log('==> Start interval!');
       const intervalId = setInterval(async () => {
         await this.getRequestResults();
-        if (!this.requestResults.find((r) => r.doing)) {
-          console.log('==> Clear interval!');
-          clearInterval(intervalId);
+        if (this.serverDoing) {
+          this.serverQueueing = false;
+          return;
         }
+        console.log('==> Clear interval!');
+        clearInterval(intervalId);
       }, 5000);
     },
-    onItemSelected(requestResults) {
-      console.log({ requestResults });
-      this.url = requestResults.url;
-      this.title = requestResults.tag.title;
-      this.artist = requestResults.tag.artist;
-      this.album = requestResults.tag.album;
-      this.genre = requestResults.tag.genre;
+    onItemSelected(rr) {
+      console.log({ rr });
+      this.url = rr.url;
+      this.title = rr.tag.title;
+      this.artist = rr.tag.artist;
+      this.album = rr.tag.album;
+      this.genre = rr.tag.genre;
     },
-    download(requestResults, movie) {
-      const title = requestResults.tag.title;
-      let url = requestResults.audio;
+    download(rr, movie) {
+      const title = rr.tag.title;
+      let url = rr.audio;
       if (movie) {
-        url = requestResults.movie;
+        url = rr.movie;
       }
       const ext = this.ext(url);
       url = `${url}?f=${title}.${ext}`;
