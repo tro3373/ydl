@@ -45,8 +45,9 @@ prepare: check
 	@echo "==> $@ $(STAGE)" && \
 	(docker images |grep ydl-dev >&/dev/null || make STAGE=dev build-image) && \
 	if [[ ${STAGE} == "prd" ]]; then \
-		([[ ! -e ./client/back/dist || ! -e ./server/ydl/ydl ]] && make STAGE=prd build); \
-		(docker images |grep 'ydl ' >&/dev/null || make STAGE=prd build-image) \
+		(docker images |grep 'ydl ' >&/dev/null || make STAGE=prd build-image) && \
+		(test -e ./server/ydl/ydl || make STAGE=prd build-app) &&  \
+		(test -e ./client/back/dist || make STAGE=prd build-client); \
 	fi
 
 up: start logsf

@@ -4,9 +4,3 @@ RUN set -eux && \
     apt-get update && \
     apt-get install -y --no-install-recommends ffmpeg && \
     rm -rf /var/lib/apt/lists/*
-
-COPY ydl /usr/local/bin/
-
-WORKDIR /root
-
-ENTRYPOINT ["ydl"]
