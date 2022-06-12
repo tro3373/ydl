@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -37,13 +38,15 @@ func StartApi(ctx worker.Ctx) {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
 	}
 	handleAsBadRequest := func(c *gin.Context, message string, err error) {
-		logger.Error(message, zap.String("Error:", err.Error()))
+		if err != nil {
+			logger.Error(message, zap.String("Error:", err.Error()))
+		}
 		c.JSON(http.StatusBadRequest, gin.H{"status": "BadRequest"})
 	}
 
 	engine.GET("/api", func(c *gin.Context) {
 		uuid := c.GetHeader("x-uuid")
-		var key = c.Query("key")
+		key := c.Query("key")
 		logger.Info("[GET] ==> ", zap.String("uuid", uuid), zap.String("key", key))
 
 		doingFiles, err := findJsons(ctx.WorkDirs.Doing, key)
@@ -95,6 +98,22 @@ func StartApi(ctx worker.Ctx) {
 		})
 	})
 
+	engine.DELETE("/api", func(c *gin.Context) {
+		uuid := c.GetHeader("x-uuid")
+		key := c.Query("key")
+		if len(key) == 0 {
+			handleAsBadRequest(c, "Empty key request.", nil)
+			return
+		}
+		logger.Info("[DELETE] ==> ", zap.String("uuid", uuid), zap.String("key", key))
+		if err := removeRequest(ctx.WorkDirs.Done, key); err != nil {
+			handleAsServerError(c, fmt.Sprintf("Failed to remove %s.", key), err)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"message": fmt.Sprintf("ok"),
+		})
+	})
 	engine.Run(":3000")
 }
 
@@ -144,4 +163,11 @@ func saveRequest(dstRootDir string, req request.Req) error {
 	logger.Info("==> Saving request..", zap.String("dstFile", dstFile))
 	data, _ := json.MarshalIndent(req, "", " ")
 	return ioutil.WriteFile(dstFile, data, 0644)
+}
+
+func removeRequest(rootDir, key string) error {
+	if len(key) == 0 {
+		return errors.New("Empty key specified")
+	}
+	return os.RemoveAll(filepath.Join(rootDir, key))
 }
