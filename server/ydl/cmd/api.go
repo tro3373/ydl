@@ -20,75 +20,51 @@ import (
 	"go.uber.org/zap"
 )
 
-// // apiCmd represents the api command
-// var apiCmd = &cobra.Command{
-// 	Use:   "api",
-// 	Short: "A brief description of your command",
-// 	Long: `A longer description that spans multiple lines and likely contains examples
-// and usage of using your command. For example:
-//
-// Cobra is a CLI library for Go that empowers applications.
-// This application is a tool to generate the needed files
-// to quickly create a Cobra application.`,
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		StartApi(args)
-// 	},
-// }
-
 var logger *zap.Logger
 
-// func init() {
-// 	rootCmd.AddCommand(apiCmd)
-//
-// 	// Here you will define your flags and configuration settings.
-//
-// 	// Cobra supports Persistent Flags which will work for this command
-// 	// and all subcommands, e.g.:
-// 	// apiCmd.PersistentFlags().String("foo", "", "A help for foo")
-//
-// 	// Cobra supports local flags which will only run when this command
-// 	// is called directly, e.g.:
-// 	// apiCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-// }
-//
 func StartApi(ctx worker.Ctx) {
 	engine := gin.Default()
 	engine.Use(middleware.RecordUaAndTime)
 	zapLogger, err := zap.NewProduction()
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatalf("Failed to initialize zap logger: %v", err)
 	}
 	logger = zapLogger
+	defer logger.Sync()
+
+	handleAsServerError := func(c *gin.Context, message string, err error) {
+		logger.Error(message, zap.String("Error:", err.Error()))
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
+	}
+	handleAsBadRequest := func(c *gin.Context, message string, err error) {
+		logger.Error(message, zap.String("Error:", err.Error()))
+		c.JSON(http.StatusBadRequest, gin.H{"status": "BadRequest"})
+	}
 
 	engine.GET("/api", func(c *gin.Context) {
-		uuid := c.Request.Header.Get("x-uuid")
+		uuid := c.GetHeader("x-uuid")
 		var key = c.Query("key")
-		logger.Info("[INFO] ==> ", zap.String("uuid", uuid), zap.String("key", key))
-
-		handleErr := func(message string, err error) {
-			logger.Error(message, zap.String("Error:", err.Error()))
-			c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
-		}
+		logger.Info("[GET] ==> ", zap.String("uuid", uuid), zap.String("key", key))
 
 		doingFiles, err := findJsons(ctx.WorkDirs.Doing, key)
 		if err != nil {
-			handleErr("[ERROR] ==> Failed to find doing jsons.", err)
+			handleAsServerError(c, "Failed to find doing jsons.", err)
 			return
 		}
 		doneFiles, err := findJsons(ctx.WorkDirs.Done, key)
 		if err != nil {
-			handleErr("[ERROR] ==> Failed to find done jsons.", err)
+			handleAsServerError(c, "Failed to find done jsons.", err)
 			return
 		}
 
 		jsons, err := readJsons(doingFiles, uuid, true)
 		if err != nil {
-			handleErr("[ERROR] ==> Failed to read doing jsons.", err)
+			handleAsServerError(c, "Failed to read doing jsons.", err)
 			return
 		}
 		doneJsons, err := readJsons(doneFiles, uuid, false)
 		if err != nil {
-			handleErr("[ERROR] ==> Failed to read done jsons.", err)
+			handleAsServerError(c, "Failed to read done jsons.", err)
 			return
 		}
 		for _, doneJson := range doneJsons {
@@ -102,14 +78,14 @@ func StartApi(ctx worker.Ctx) {
 	engine.POST("/api", func(c *gin.Context) {
 		var req request.Req
 		if err := c.Bind(&req); err != nil {
-			logger.Error("[ERROR] ==> Failed to bind request.", zap.String("Error:", err.Error()))
-			c.JSON(http.StatusBadRequest, gin.H{"status": "BadRequest"})
+			handleAsBadRequest(c, "Failed to bind request.", err)
 			return
 		}
-		req.Uuid = c.Request.Header.Get("x-uuid")
+		req.Uuid = c.GetHeader("x-uuid")
+		logger.Info("[POST] ==> ", zap.Object("req", req))
 		err := saveRequest(ctx.WorkDirs.Queue, req)
 		if err != nil {
-			logger.Error("[ERROR] ==> Failed to save request.", zap.String("Error:", err.Error()))
+			logger.Error("Failed to save request.", zap.String("Error:", err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "StatusInternalServerError"})
 			return
 		}
@@ -118,6 +94,7 @@ func StartApi(ctx worker.Ctx) {
 			"message": fmt.Sprintf("ok"),
 		})
 	})
+
 	engine.Run(":3000")
 }
 

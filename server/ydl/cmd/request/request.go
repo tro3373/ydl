@@ -1,6 +1,10 @@
 package request
 
-import "regexp"
+import (
+	"regexp"
+
+	"go.uber.org/zap/zapcore"
+)
 
 type Req struct {
 	Url       string `json:"url" binding:"required"`
@@ -14,6 +18,22 @@ type Tag struct {
 	Artist string `json:"artist"`
 	Album  string `json:"album"`
 	Genre  string `json:"genre"`
+}
+
+func (r Req) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	enc.AddString("url", r.Url)
+	enc.AddString("uuid", r.Uuid)
+	enc.AddString("createdAt", r.CreatedAt)
+	enc.AddObject("tag", r.Tag)
+	return nil
+}
+
+func (t Tag) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	enc.AddString("titile", t.Title)
+	enc.AddString("artist", t.Artist)
+	enc.AddString("album", t.Album)
+	enc.AddString("genre", t.Genre)
+	return nil
 }
 
 func Key(url string) string {
