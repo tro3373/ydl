@@ -1,15 +1,59 @@
 package worker
 
 import (
+	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/tro3373/ydl/cmd/util"
+	"github.com/tro3373/ydl/cmd/worker/ctx"
+	"github.com/tro3373/ydl/cmd/worker/lib"
+	"github.com/tro3373/ydl/cmd/worker/movie"
+	"github.com/tro3373/ydl/cmd/worker/task"
 )
 
-func Start(ctx Ctx, event fsnotify.Event) {
+func Start(ctx ctx.Ctx) {
+	var handleError = func(message string, err error) {
+		if err == nil {
+			return
+		}
+		fmt.Println(message, err)
+		os.Exit(1)
+	}
+
+	handleError("Failed to clean running file", cleanTaskRunningIfNeeded(ctx))
+	handleError("Failed to update lib", lib.UpdateLibIFNeeded(ctx))
+	watcher, err := fsnotify.NewWatcher()
+	handleError("Failed to new watcher", err)
+
+	defer watcher.Close()
+	done := make(chan bool)
+	go dog(watcher, ctx)
+
+	fmt.Println("==> Watching", ctx.WorkDirs.Queue, "..")
+	if err := watcher.Add(ctx.WorkDirs.Queue); err != nil {
+		fmt.Println("Failed to watcher.Add", err)
+	}
+	<-done
+}
+
+func dog(watcher *fsnotify.Watcher, ctx ctx.Ctx) {
+	for {
+		select {
+		case event := <-watcher.Events:
+			// Receive event! fsnotify.Event{Name:"path/to/the/file", Op:0x1}
+			fmt.Printf("Receive event! Name:%s Op:%s\n", event.Name, event.Op.String())
+			if event.Op&fsnotify.Create == fsnotify.Create {
+				StartTasks(ctx, event)
+			}
+		case err := <-watcher.Errors:
+			fmt.Println("Receive error!", err)
+		}
+	}
+}
+
+func StartTasks(ctx ctx.Ctx, event fsnotify.Event) {
 	if isTaskRunning(ctx) {
 		util.LogWarn("=> Already tasks running")
 		return
@@ -24,46 +68,13 @@ func Start(ctx Ctx, event fsnotify.Event) {
 		rmTaskRunning(ctx)
 		util.LogInfo(msg)
 	}()
-	err = startTasks(ctx)
+	err = handleTasks(ctx)
 	if err != nil {
 		msg = "=> Some task was failed.."
 	}
 }
 
-func getTasksRunningFile(ctx Ctx) string {
-	return path.Join(ctx.WorkDir, ".tasks_running")
-}
-
-func isTaskRunning(ctx Ctx) bool {
-	return util.Exists(getTasksRunningFile(ctx))
-}
-
-func touchTaskRunning(ctx Ctx) error {
-	file := getTasksRunningFile(ctx)
-	if err := util.Touch(file); err != nil {
-		util.LogError("Failed to touch", file, err)
-		return err
-	}
-	return nil
-}
-
-func rmTaskRunning(ctx Ctx) error {
-	file := getTasksRunningFile(ctx)
-	if err := os.Remove(file); err != nil {
-		util.LogError("Failed to remove", file, err)
-		return err
-	}
-	return nil
-}
-
-func cleanTaskRunning(ctx Ctx) error {
-	if !isTaskRunning(ctx) {
-		return nil
-	}
-	return rmTaskRunning(ctx)
-}
-
-func startTasks(ctx Ctx) error {
+func handleTasks(ctx ctx.Ctx) error {
 	jsons, err := findJsons(ctx.WorkDirs.Queue)
 	if err != nil {
 		util.LogError("Failed to findJson", err)
@@ -83,21 +94,21 @@ func findJsons(dir string) ([]string, error) {
 	return filepath.Glob(filepath.Join(dir, "*.json"))
 }
 
-func handleJson(ctx Ctx, jsonPath string) error {
-	task, err := NewTask(ctx, jsonPath)
+func handleJson(ctx ctx.Ctx, jsonPath string) error {
+	task, err := task.NewTask(ctx, jsonPath)
 	if err != nil {
 		return err
 	}
 	util.LogInfo("=> Start New Task!", task.String())
 
 	if !task.HasMovie() {
-		err = StartDownloadMovie(task)
+		err = movie.StartDownload(task)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = StartConvert(task)
+	err = movie.StartConvert(task)
 	if err != nil {
 		return err
 	}

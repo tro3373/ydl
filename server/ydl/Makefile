@@ -1,7 +1,7 @@
 SHELL=/bin/bash
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(patsubst %/,%,$(dir $(mkfile_path)))
-name := $(shell head -1 $(current_dir)/go.mod|sed -e 's,^.*/,,g')
+name := $(shell grep module $(current_dir)/go.mod|head -1|sed -e 's,^.*/,,g')
 
 .DEFAULT_GOAL := run
 

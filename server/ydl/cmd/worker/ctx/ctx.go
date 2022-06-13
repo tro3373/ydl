@@ -1,4 +1,4 @@
-package worker
+package ctx
 
 import (
 	"os"
@@ -32,10 +32,10 @@ func NewCtx(args []string) (Ctx, error) {
 		return Ctx{}, err
 	}
 	workDirs := WorkDirs{
-		Lib:   createDirIfNotExist(workDir, "lib"),
-		Queue: createDirIfNotExist(workDir, "queue"),
-		Doing: createDirIfNotExist(workDir, "doing"),
-		Done:  createDirIfNotExist(workDir, "done"),
+		Lib:   util.CreateDirIfNotExist(workDir, "lib"),
+		Queue: util.CreateDirIfNotExist(workDir, "queue"),
+		Doing: util.CreateDirIfNotExist(workDir, "doing"),
+		Done:  util.CreateDirIfNotExist(workDir, "done"),
 	}
 	downloadLib := DownloadLib{
 		// Repo: "ytdl-org/youtube-dl",
@@ -45,11 +45,10 @@ func NewCtx(args []string) (Ctx, error) {
 		Sums: "SHA2-256SUMS",
 	}
 	ctx := Ctx{
-		WorkDir:     createDirIfNotExist(workDir, ""),
+		WorkDir:     util.CreateDirIfNotExist(workDir, ""),
 		WorkDirs:    workDirs,
 		DownloadLib: downloadLib,
 	}
-	err = ctx.Clean()
 	return ctx, err
 }
 
@@ -66,21 +65,6 @@ func chooseWorkDir(args []string) (string, error) {
 		dir = filepath.Join(currentDir, "work")
 	}
 	return filepath.Abs(dir)
-}
-
-func createDirIfNotExist(targetDirPath, subDir string) string {
-	dir := targetDirPath
-	if len(subDir) > 0 {
-		dir = filepath.Join(targetDirPath, subDir)
-	}
-	if !util.Exists(dir) {
-		os.MkdirAll(dir, 0775)
-	}
-	return dir
-}
-
-func (ctx Ctx) Clean() error {
-	return cleanTaskRunning(ctx)
 }
 
 func (ctx Ctx) GetDoneDir(key string) string {

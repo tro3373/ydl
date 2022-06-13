@@ -1,4 +1,4 @@
-package worker
+package task
 
 import (
 	"encoding/json"
@@ -10,12 +10,13 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/tro3373/ydl/cmd/request"
+	"github.com/tro3373/ydl/cmd/api/request"
 	"github.com/tro3373/ydl/cmd/util"
+	"github.com/tro3373/ydl/cmd/worker/ctx"
 )
 
 type Task struct {
-	Ctx       Ctx         `json:"ctx"`
+	Ctx       ctx.Ctx     `json:"ctx"`
 	TaskPath  TaskPath    `json:"taskPath"`
 	Url       string      `json:"url" binding:"required"`
 	Tag       request.Tag `json:"tag"`
@@ -33,15 +34,15 @@ type TaskPath struct {
 	Audio     string `json:"audio"`
 }
 
-func NewTask(ctx Ctx, jsonPath string) (*Task, error) {
+func NewTask(ctx ctx.Ctx, jsonPath string) (*Task, error) {
 	return newTaskInner(ctx, jsonPath, true)
 }
 
-func ReadTask(ctx Ctx, jsonPath string) (*Task, error) {
+func ReadTask(ctx ctx.Ctx, jsonPath string) (*Task, error) {
 	return newTaskInner(ctx, jsonPath, false)
 }
 
-func newTaskInner(ctx Ctx, jsonPath string, forQueue bool) (*Task, error) {
+func newTaskInner(ctx ctx.Ctx, jsonPath string, forQueue bool) (*Task, error) {
 	task := Task{
 		Ctx: ctx,
 	}
@@ -68,7 +69,7 @@ func newTaskInner(ctx Ctx, jsonPath string, forQueue bool) (*Task, error) {
 			os.MkdirAll(doingDir, 0775)
 		}
 	}
-	err = task.findTargetFile(findTargetDir)
+	err = task.FindTargetFile(findTargetDir)
 	if err != nil {
 		return &task, err
 	}
@@ -104,7 +105,7 @@ func (task *Task) readJson(jsonPath string) (*request.Req, error) {
 	return &req, nil
 }
 
-func (task *Task) findTargetFile(targetDir string) error {
+func (task *Task) FindTargetFile(targetDir string) error {
 	err := util.ReadDir(targetDir, task.readDirHandler)
 	task.genTitleFromInfoIfEnable()
 	return err
@@ -137,7 +138,7 @@ func (task *Task) readDirHandler(dir, name string) error {
 	return nil
 }
 
-func (task *Task) setPathAudioFromPathMovie() {
+func (task *Task) SetPathAudioFromPathMovie() {
 	movie := task.TaskPath.Movie
 	dir := filepath.Dir(movie)
 	ext := filepath.Ext(movie)
@@ -187,7 +188,7 @@ func (task *Task) Done() error {
 		return err
 	}
 
-	err = task.findTargetFile(task.TaskPath.Done)
+	err = task.FindTargetFile(task.TaskPath.Done)
 	if err != nil {
 		return err
 	}

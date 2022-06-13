@@ -1,4 +1,4 @@
-package worker
+package movie
 
 import (
 	"fmt"
@@ -7,11 +7,12 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
-	"github.com/tro3373/ydl/cmd/request"
+	"github.com/tro3373/ydl/cmd/api/request"
 	"github.com/tro3373/ydl/cmd/util"
+	"github.com/tro3373/ydl/cmd/worker/task"
 )
 
-func StartDownloadMovie(task *Task) error {
+func StartDownload(task *task.Task) error {
 
 	util.LogInfo("=> Downloading via youtube-dl..")
 	cmd, dstd := buildCmd(task)
@@ -21,14 +22,14 @@ func StartDownloadMovie(task *Task) error {
 	if err != nil {
 		return errors.Wrapf(err, "Failed to executeYoutubeDl %s", err)
 	}
-	err = task.findTargetFile(dstd)
+	err = task.FindTargetFile(dstd)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func buildCmd(task *Task) (*exec.Cmd, string) {
+func buildCmd(task *task.Task) (*exec.Cmd, string) {
 	ctx := task.Ctx
 	key := request.Key(task.Url)
 

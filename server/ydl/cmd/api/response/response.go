@@ -3,9 +3,9 @@ package response
 import (
 	"fmt"
 
-	"github.com/tro3373/ydl/cmd/request"
+	"github.com/tro3373/ydl/cmd/api/request"
 	"github.com/tro3373/ydl/cmd/util"
-	"github.com/tro3373/ydl/cmd/worker"
+	"github.com/tro3373/ydl/cmd/worker/task"
 )
 
 type Res struct {
@@ -20,7 +20,7 @@ type Res struct {
 	AudioSize int64       `json:"audioSize"`
 }
 
-func NewRes(task worker.Task, doing bool) Res {
+func NewRes(task task.Task, doing bool) Res {
 	workDir := task.Ctx.WorkDir
 	thumbnail := toResourcePath(workDir, task.TaskPath.Thumbnail)
 	movie := toResourcePath(workDir, task.TaskPath.Movie)

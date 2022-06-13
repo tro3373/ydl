@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
@@ -202,4 +203,15 @@ func GetFileSize(filePath string) (int64, error) {
 		return -1, err
 	}
 	return info.Size(), nil
+}
+
+func CreateDirIfNotExist(targetDirPath, subDir string) string {
+	dir := targetDirPath
+	if len(subDir) > 0 {
+		dir = filepath.Join(targetDirPath, subDir)
+	}
+	if !Exists(dir) {
+		os.MkdirAll(dir, 0775)
+	}
+	return dir
 }

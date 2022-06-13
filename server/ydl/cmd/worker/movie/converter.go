@@ -1,4 +1,4 @@
-package worker
+package movie
 
 import (
 	"fmt"
@@ -7,14 +7,15 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/tro3373/ydl/cmd/util"
+	"github.com/tro3373/ydl/cmd/worker/task"
 )
 
-func StartConvert(task *Task) error {
+func StartConvert(task *task.Task) error {
 
 	util.LogInfo("Converting mp3 via ffmpeg..")
 
 	if len(task.TaskPath.Audio) == 0 {
-		task.setPathAudioFromPathMovie()
+		task.SetPathAudioFromPathMovie()
 	}
 	tag := task.Tag
 	taskPath := task.TaskPath

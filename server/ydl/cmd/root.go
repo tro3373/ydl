@@ -5,7 +5,9 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/tro3373/ydl/cmd/api"
 	"github.com/tro3373/ydl/cmd/worker"
+	"github.com/tro3373/ydl/cmd/worker/ctx"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -21,14 +23,14 @@ to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		ctx, err := worker.NewCtx(args)
+		ctx, err := ctx.NewCtx(args)
 		if err != nil {
 			fmt.Println("Failed to new ctx Error", err)
 			os.Exit(1)
 		}
 		fmt.Println("==> Using", ctx.WorkDir, "as work directory.")
-		go StartBatch(ctx)
-		StartApi(ctx)
+		go worker.Start(ctx)
+		api.Start(ctx)
 	},
 }
 
