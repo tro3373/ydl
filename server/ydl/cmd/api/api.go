@@ -30,7 +30,7 @@ func Start(ctx ctx.Ctx) {
 	v1 := engine.Group("/api")
 	v1.GET("", handler.GetDones)
 	v1.POST("", handler.CreateQueue)
-	v1.DELETE("", handler.RemoveDone)
+	v1.DELETE("/:key", handler.DeleteDone)
 
 	engine.Run(":3000")
 }

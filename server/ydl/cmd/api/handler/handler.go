@@ -81,9 +81,9 @@ func (h *Handler) CreateQueue(c *gin.Context) {
 	h.ok(c)
 }
 
-func (h *Handler) RemoveDone(c *gin.Context) {
+func (h *Handler) DeleteDone(c *gin.Context) {
 	uuid := c.GetHeader("x-uuid")
-	key := c.Query("key")
+	key := c.Param("key")
 	if len(key) == 0 {
 		h.handleAsBadRequest(c, "Empty key request.", nil)
 		return
@@ -93,6 +93,7 @@ func (h *Handler) RemoveDone(c *gin.Context) {
 		h.handleAsServerError(c, fmt.Sprintf("Failed to remove %s.", key), err)
 		return
 	}
+	h.logger.Info("[DELETE] Deleted", zap.String("key", key))
 	h.ok(c)
 }
 
