@@ -5,6 +5,7 @@ const CommonConstants = {
   LOCAL_STRAGE_KEY: {
     CACHE: 'local_strage_key_cache',
     UUID: 'local_strage_key_uuid',
+    VISITED: 'local_strage_key_visited',
   },
 };
 const EnvConstants = {};

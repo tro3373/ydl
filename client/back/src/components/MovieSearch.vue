@@ -114,20 +114,16 @@
                 <v-list-item-subtitle v-text="rr.tag.artist"></v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
-                <v-btn icon>
-                  <v-icon :disabled="rr.doing" @click.stop="download(rr, 1)" color="red"
-                    >mdi-movie</v-icon
-                  >
+                <v-btn :color="isVisited(rr.movie) ? 'blue-grey lighten-4' : 'red lighten-1'" icon>
+                  <v-icon :disabled="rr.doing" @click.stop="download(rr, 1)">mdi-movie</v-icon>
                 </v-btn>
-                <div class="v-icon notranslate mdi theme--light text-caption">
+                <div class="v-icon notranslate mdi text-caption">
                   {{ humanSize(rr.movieSize) }}
                 </div>
-                <v-btn icon>
-                  <v-icon :disabled="rr.doing" @click.stop="download(rr, 0)" color="red"
-                    >mdi-music</v-icon
-                  >
+                <v-btn :color="isVisited(rr.audio) ? 'blue-grey lighten-4' : 'red lighten-1'" icon>
+                  <v-icon :disabled="rr.doing" @click.stop="download(rr, 0)">mdi-music</v-icon>
                 </v-btn>
-                <div class="v-icon notranslate mdi theme--light text-caption">
+                <div class="v-icon notranslate mdi text-caption">
                   {{ humanSize(rr.audioSize) }}
                 </div>
               </v-list-item-action>
@@ -203,9 +199,15 @@ export default {
       localStorage.getItem(Const.LOCAL_STRAGE_KEY.CACHE) || JSON.stringify(inputInit)
     );
     const uuid = localStorage.getItem(Const.LOCAL_STRAGE_KEY.UUID) || util.uuid();
+    const visited = JSON.parse(localStorage.getItem(Const.LOCAL_STRAGE_KEY.VISITED) || '[]');
     return {
       ...input,
       uuid,
+      visited,
+      // type: 'mp3',
+      serverQueueing: false,
+      oembedGuard: true,
+      valid: this.valid,
       rules: {
         url: [
           () => {
@@ -218,10 +220,6 @@ export default {
           },
         ],
       },
-      // type: 'mp3',
-      serverQueueing: false,
-      oembedGuard: true,
-      valid: this.valid,
     };
   },
   computed: {
@@ -340,6 +338,7 @@ export default {
       if (movie) {
         url = rr.movie;
       }
+      this.saveVisited(url);
       const ext = this.ext(url);
       url = `${url}?f=${title}.${ext}`;
       window.open(url, '_self');
@@ -356,6 +355,13 @@ export default {
       const res = await client.deleteRequest(youtubeId);
       console.log({ res });
       await this.getRequestResults();
+    },
+    saveVisited(url) {
+      this.visited = util.uniq([...this.visited, url]);
+      localStorage.setItem(Const.LOCAL_STRAGE_KEY.VISITED, JSON.stringify(this.visited));
+    },
+    isVisited(url) {
+      return this.visited.includes(url);
     },
     ext(file) {
       return file.substr(file.lastIndexOf('.') + 1);

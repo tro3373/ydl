@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const core = {};
 
-core.isEmpty = arg => {
+core.isEmpty = (arg) => {
   if (arg == null) return true;
   if (arg === void 0) return true;
   switch (typeof arg) {
@@ -33,6 +33,10 @@ core.isEmpty = arg => {
 
 core.uuid = () => {
   return uuidv4();
+};
+
+core.uniq = (list) => {
+  return [...new Set(list)];
 };
 
 export default core;
