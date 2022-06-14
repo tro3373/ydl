@@ -131,10 +131,23 @@
                   {{ humanSize(rr.audioSize) }}
                 </div>
               </v-list-item-action>
+              <v-list-item-action>
+                <v-btn color="red lighten-2" icon>
+                  <v-icon :disabled="rr.doing" @click.stop="confirmDelete(rr)">
+                    mdi-delete-forever
+                  </v-icon>
+                </v-btn>
+              </v-list-item-action>
             </v-list-item>
           </v-list>
         </v-card>
       </v-flex>
+      <ConfirmDialog
+        ref="confirmDialog"
+        title="削除"
+        message="保存されたデータを消す"
+        buttonOk="消す"
+      />
     </v-layout>
   </v-container>
 </template>
@@ -144,6 +157,7 @@ import { createNamespacedHelpers } from 'vuex';
 import _ from 'lodash';
 import qs from 'query-string';
 import EmbedPlayer from '@/components/EmbedPlayer.vue';
+import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import util from '../util/util.js';
 import client from '@/api/client.js';
 import youtubeApilient from '@/api/youtubeApiClient.js';
@@ -154,6 +168,7 @@ export default {
   name: 'MovieSearch',
   components: {
     EmbedPlayer,
+    ConfirmDialog,
   },
   watch: {
     inputCache() {
@@ -328,6 +343,19 @@ export default {
       const ext = this.ext(url);
       url = `${url}?f=${title}.${ext}`;
       window.open(url, '_self');
+    },
+    confirmDelete(rr) {
+      const youtubeId = rr.url;
+      const movieTitle = rr.tag.title;
+      this.$refs.confirmDialog.show(movieTitle, async () => {
+        await this.deleteRequest(youtubeId);
+      });
+    },
+    async deleteRequest(youtubeId) {
+      console.log(youtubeId);
+      const res = await client.deleteRequest(youtubeId);
+      console.log({ res });
+      await this.getRequestResults();
     },
     ext(file) {
       return file.substr(file.lastIndexOf('.') + 1);

@@ -12,6 +12,10 @@ const ENDPOINT = {
     url: `${Const.API_PREFIX}`,
     method: 'post',
   },
+  DELETE_REQUEST: {
+    url: `${Const.API_PREFIX}/{key}`,
+    method: 'delete',
+  },
 };
 
 const ApiClient = class ApiClient extends BaseClient {
@@ -37,6 +41,16 @@ const ApiClient = class ApiClient extends BaseClient {
       ...ENDPOINT.DL_REQUEST,
       data: params,
     });
+    return res.data;
+  }
+
+  async deleteRequest(key) {
+    const res = await super.request(
+      {
+        ...ENDPOINT.DELETE_REQUEST,
+      },
+      { key }
+    );
     return res.data;
   }
 
