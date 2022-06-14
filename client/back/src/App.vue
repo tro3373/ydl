@@ -15,5 +15,8 @@ export default {
     MovieSearch,
   },
   data: () => ({}),
+  mounted() {
+    this.$vuetify.theme.dark = true;
+  },
 };
 </script>
