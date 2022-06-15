@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/tro3373/ydl/cmd/api/handler"
 	"github.com/tro3373/ydl/cmd/api/middleware"
@@ -16,7 +17,14 @@ var logger *zap.Logger
 
 func Start(ctx ctx.Ctx) {
 	engine := gin.Default()
+
+	engine.Use(static.Serve("/", static.LocalFile("./assets", true)))
 	engine.Use(middleware.RecordUaAndTime)
+	engine.NoRoute(func(c *gin.Context) {
+		c.File("./assets/index.html")
+	})
+
+	// engine.Static("/", "./assets")
 	// zapLogger, err := zap.NewProduction()
 	zapLogger, err := newLogger()
 	if err != nil {
