@@ -58,7 +58,7 @@ func Exists(filename string) bool {
 func Touch(path string) error {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		file, err := os.Create(path)
+		file, err := os.Create(filepath.Clean(path))
 		if err != nil {
 			return err
 		}
@@ -80,7 +80,7 @@ func ReadDir(dir string, fn func(dir, name string) error) error {
 	if !Exists(dir) {
 		return nil
 	}
-	f, err := os.Open(dir)
+	f, err := os.Open(filepath.Clean(dir))
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func ReadFileIfExist(filePath string) (string, error) {
 	if len(filePath) == 0 || !Exists(filePath) {
 		return "", nil
 	}
-	raw, err := ioutil.ReadFile(filePath)
+	raw, err := ioutil.ReadFile(filepath.Clean(filePath))
 	if err != nil {
 		return "", err
 	}
@@ -115,7 +115,7 @@ func WriteFile(filePath, data string) error {
 }
 
 func IsEmptyDir(dirPath string) (bool, error) {
-	f, err := os.Open(dirPath)
+	f, err := os.Open(filepath.Clean(dirPath))
 	if err != nil {
 		return false, err
 	}
@@ -152,7 +152,7 @@ func Contains(list interface{}, target interface{}) bool {
 }
 
 func CheckSha256sum(targetFile, sha256SumFile, key string) error {
-	f, err := os.Open(targetFile)
+	f, err := os.Open(filepath.Clean(targetFile))
 	if err != nil {
 		return err
 	}
@@ -178,7 +178,7 @@ func CheckSha256sum(targetFile, sha256SumFile, key string) error {
 }
 
 func readSha256Sums(filePath, key string) (string, error) {
-	fp, err := os.Open(filePath)
+	fp, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
 		return "", err
 	}

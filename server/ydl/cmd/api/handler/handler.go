@@ -112,7 +112,7 @@ func (h *Handler) readJsons(doneFiles []string, uuid string, doing bool) ([]resp
 	var reses []response.Res
 	for _, file := range doneFiles {
 		h.logger.Debug("[INFO] ==> ", zap.String("uuid", uuid), zap.String("file", file))
-		raw, err := ioutil.ReadFile(file)
+		raw, err := ioutil.ReadFile(filepath.Clean(file))
 		if err != nil {
 			return nil, err
 		}

@@ -96,7 +96,7 @@ func (task *Task) Key() string {
 }
 
 func (task *Task) readJson(jsonPath string) (*request.Req, error) {
-	raw, err := ioutil.ReadFile(jsonPath)
+	raw, err := ioutil.ReadFile(filepath.Clean(jsonPath))
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed to read json %s", jsonPath)
 	}

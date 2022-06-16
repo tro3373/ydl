@@ -24,5 +24,5 @@ func UpdateLibIFNeeded(ctx ctx.Ctx) error {
 	if err != nil {
 		return err
 	}
-	return os.Chmod(libdAbs, 0775)
+	return os.Chmod(libdAbs, 0775) //#nosec G302
 }

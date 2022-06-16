@@ -148,7 +148,7 @@ func downloadResource(dstd, repo string, id float64, c chan int) error {
 }
 
 func save(dst string, body io.ReadCloser) error {
-	f, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
+	f, err := os.OpenFile(filepath.Clean(dst), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664) //#nosec G302
 	if err != nil {
 		return errors.Wrapf(err, "Failed to open file %s", dst)
 	}
