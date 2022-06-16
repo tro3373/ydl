@@ -31,6 +31,10 @@ SPA asssets embeded in api will be ignored
 ---
 
 # TODO
+- assets empbeded in api for prd
+    - [The easiest way to embed static files into a binary file in your Golang app (no external dependencies) - DEV Community](https://dev.to/koddr/the-easiest-way-to-embed-static-files-into-a-binary-file-in-your-golang-app-no-external-dependencies-43pc)
+- gosec
+- go generate
 
 # DONE
 - gin static
