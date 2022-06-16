@@ -117,7 +117,10 @@ func (h *Handler) readJsons(doneFiles []string, uuid string, doing bool) ([]resp
 			return nil, err
 		}
 		var task task.Task
-		json.Unmarshal(raw, &task)
+
+		if err := json.Unmarshal(raw, &task); err != nil {
+			return nil, err
+		}
 		if !util.Contains(task.Uuids, uuid) {
 			continue
 		}
@@ -136,13 +139,16 @@ func (h *Handler) saveRequest(dstRootDir string, req request.Req) error {
 	req.CreatedAt = timestamp
 
 	if !util.Exists(dstRootDir) {
-		os.MkdirAll(dstRootDir, os.ModePerm)
+
+		if err := os.MkdirAll(dstRootDir, os.ModePerm); err != nil {
+			return fmt.Errorf("Failed to create directory %s %s: %w", dstRootDir, os.ModePerm, err)
+		}
 	}
 	dstFile := h.getJsonPath(dstRootDir, key)
 
 	h.logger.Info("==> Saving request..", zap.String("dstFile", dstFile))
 	data, _ := json.MarshalIndent(req, "", " ")
-	return ioutil.WriteFile(dstFile, data, 0644)
+	return ioutil.WriteFile(dstFile, data, os.ModePerm)
 }
 
 func (h *Handler) removeRequest(rootDir, key string) error {

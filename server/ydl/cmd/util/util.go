@@ -62,7 +62,11 @@ func Touch(path string) error {
 		if err != nil {
 			return err
 		}
-		defer file.Close()
+		defer func() {
+			if err := file.Close(); err != nil {
+				fmt.Println("Failed to close", path)
+			}
+		}()
 		return nil
 	}
 	currentTime := time.Now().Local()
@@ -84,7 +88,11 @@ func ReadDir(dir string, fn func(dir, name string) error) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Println("Failed to close", dir)
+		}
+	}()
 
 	names, err := f.Readdirnames(-1)
 	if err != nil {
@@ -111,7 +119,7 @@ func ReadFileIfExist(filePath string) (string, error) {
 }
 
 func WriteFile(filePath, data string) error {
-	return ioutil.WriteFile(filePath, []byte(data), 0644)
+	return ioutil.WriteFile(filePath, []byte(data), os.ModePerm)
 }
 
 func IsEmptyDir(dirPath string) (bool, error) {
@@ -119,7 +127,11 @@ func IsEmptyDir(dirPath string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Println("Failed to close", dirPath)
+		}
+	}()
 	_, err = f.Readdirnames(1)
 	if err == io.EOF {
 		return true, nil
@@ -156,7 +168,11 @@ func CheckSha256sum(targetFile, sha256SumFile, key string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Println("Failed to close", targetFile)
+		}
+	}()
 
 	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {
@@ -182,7 +198,11 @@ func readSha256Sums(filePath, key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer fp.Close()
+	defer func() {
+		if err := fp.Close(); err != nil {
+			fmt.Println("Failed to close", filePath)
+		}
+	}()
 
 	r := regexp.MustCompile(".*" + key)
 	scanner := bufio.NewScanner(fp)
@@ -205,13 +225,14 @@ func GetFileSize(filePath string) (int64, error) {
 	return info.Size(), nil
 }
 
-func CreateDirIfNotExist(targetDirPath, subDir string) string {
-	dir := targetDirPath
-	if len(subDir) > 0 {
-		dir = filepath.Join(targetDirPath, subDir)
+func CreateDirsIfNotExist(dirPaths []string) error {
+	for _, dir := range dirPaths {
+		if Exists(dir) {
+			continue
+		}
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+			return err
+		}
 	}
-	if !Exists(dir) {
-		os.MkdirAll(dir, 0775)
-	}
-	return dir
+	return nil
 }

@@ -24,7 +24,9 @@ func (r Req) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	enc.AddString("url", r.Url)
 	enc.AddString("uuid", r.Uuid)
 	enc.AddString("createdAt", r.CreatedAt)
-	enc.AddObject("tag", r.Tag)
+	if err := enc.AddObject("tag", r.Tag); err != nil {
+		return err
+	}
 	return nil
 }
 

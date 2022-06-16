@@ -40,7 +40,9 @@ func Start(ctx ctx.Ctx) {
 	v1.POST("", handler.CreateQueue)
 	v1.DELETE("/:key", handler.DeleteDone)
 
-	engine.Run(":3000")
+	if err := engine.Run(":3000"); err != nil {
+		log.Fatalf("Failed to run server: %v", err)
+	}
 }
 
 func newLogger() (*zap.Logger, error) {

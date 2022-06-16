@@ -42,7 +42,7 @@ func DownloadIfNeeded(repo, dstd string, target, sha256sum string) error {
 	fmt.Printf("===> Detect %s new tag: %s\n", repo, tag)
 
 	if !util.Exists(dstd) {
-		err = os.MkdirAll(dstd, 0775)
+		err = os.MkdirAll(dstd, os.ModePerm)
 		if err != nil {
 			return err
 		}
@@ -148,16 +148,26 @@ func downloadResource(dstd, repo string, id float64, c chan int) error {
 }
 
 func save(dst string, body io.ReadCloser) error {
-	f, err := os.OpenFile(filepath.Clean(dst), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664) //#nosec G302
+	f, err := os.OpenFile(filepath.Clean(dst), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to open file %s", dst)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Println("Failed to close", dst)
+		}
+	}()
 	b := make([]byte, 4096)
 	var i int
 	for err == nil {
 		i, err = body.Read(b)
-		f.Write(b[:i])
+		if err != nil {
+			return fmt.Errorf("Failed to read body: %w", err)
+		}
+		_, err = f.Write(b[:i])
+		if err != nil {
+			return fmt.Errorf("Failed to write body: %w", err)
+		}
 	}
 	return nil
 }

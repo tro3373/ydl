@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/pkg/errors"
 	"github.com/tro3373/ydl/cmd/util"
 )
 
@@ -31,11 +32,22 @@ func NewCtx(args []string) (Ctx, error) {
 	if err != nil {
 		return Ctx{}, err
 	}
+
+	lib := filepath.Join(workDir, "lib")
+	queue := filepath.Join(workDir, "queue")
+	doing := filepath.Join(workDir, "doing")
+	done := filepath.Join(workDir, "done")
+
+	dirs := []string{lib, queue, doing, done}
+	if err := util.CreateDirsIfNotExist(dirs); err != nil {
+		return Ctx{}, errors.Wrapf(err, "Failed to create dirs %v", dirs)
+	}
+
 	workDirs := WorkDirs{
-		Lib:   util.CreateDirIfNotExist(workDir, "lib"),
-		Queue: util.CreateDirIfNotExist(workDir, "queue"),
-		Doing: util.CreateDirIfNotExist(workDir, "doing"),
-		Done:  util.CreateDirIfNotExist(workDir, "done"),
+		Lib:   lib,
+		Queue: queue,
+		Doing: doing,
+		Done:  done,
 	}
 	downloadLib := DownloadLib{
 		// Repo: "ytdl-org/youtube-dl",
@@ -45,7 +57,7 @@ func NewCtx(args []string) (Ctx, error) {
 		Sums: "SHA2-256SUMS",
 	}
 	ctx := Ctx{
-		WorkDir:     util.CreateDirIfNotExist(workDir, ""),
+		WorkDir:     workDir,
 		WorkDirs:    workDirs,
 		DownloadLib: downloadLib,
 	}

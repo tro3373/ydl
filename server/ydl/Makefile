@@ -14,14 +14,14 @@ clean:
 	@for d in $(name); do if [[ -e $${d} ]]; then echo "==> Removing $${d}.." && rm -rf $${d}; fi done
 	@echo "[OK] clean ok!"
 
-run: check clean
+run: check sec clean
 	@go run ./main.go
 
-security:
-	@gosec --color=false ./...
+sec:
+	@gosec ./...
 	@echo "[OK] Go security check was completed!"
 
-build: check security clean
+build: check sec clean
 	@env GOOS=linux go build -ldflags="-s -w"
 
 deps:

@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/tro3373/ydl/cmd/api/request"
 	"github.com/tro3373/ydl/cmd/util"
 	"github.com/tro3373/ydl/cmd/worker/ctx"
@@ -66,7 +65,10 @@ func newTaskInner(ctx ctx.Ctx, jsonPath string, forQueue bool) (*Task, error) {
 		findTargetDir = task.TaskPath.Done
 	} else {
 		if forQueue {
-			os.MkdirAll(doingDir, 0775)
+			err = os.MkdirAll(doingDir, os.ModePerm)
+			if err != nil {
+				return &task, err
+			}
 		}
 	}
 	err = task.FindTargetFile(findTargetDir)
@@ -98,10 +100,12 @@ func (task *Task) Key() string {
 func (task *Task) readJson(jsonPath string) (*request.Req, error) {
 	raw, err := ioutil.ReadFile(filepath.Clean(jsonPath))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to read json %s", jsonPath)
+		return nil, fmt.Errorf("Failed to read json %s: %w", jsonPath, err)
 	}
 	var req request.Req
-	json.Unmarshal(raw, &req)
+	if err := json.Unmarshal(raw, &req); err != nil {
+		return nil, fmt.Errorf("Failed to unmarshall %s: %w", jsonPath, err)
+	}
 	return &req, nil
 }
 
@@ -161,10 +165,16 @@ func (task *Task) genTitleFromInfoIfEnable() {
 		return
 	}
 	var info interface{}
-	json.Unmarshal(raw, &info)
+
+	if err := json.Unmarshal(raw, &info); err != nil {
+		fmt.Println("Failed to unmarshal", task.TaskPath.InfoJson)
+		return
+	}
 	m := info.(map[string]interface{})
-	title := m["title"].(string)
-	util.Touch(filepath.Join(dir, title+".title"))
+	title := m["title"].(string) + ".title"
+	if err := util.Touch(filepath.Join(dir, title)); err != nil {
+		fmt.Println("Failed to touch", title, task.TaskPath.InfoJson, err)
+	}
 }
 
 func (task *Task) HasMovie() bool {
@@ -177,7 +187,7 @@ func (task *Task) HasAudio() bool {
 func (task *Task) Done() error {
 	doneDir := task.TaskPath.Done
 	if !util.Exists(doneDir) {
-		err := os.MkdirAll(doneDir, 0775)
+		err := os.MkdirAll(doneDir, os.ModePerm)
 		if err != nil {
 			return err
 		}
@@ -218,7 +228,7 @@ func (task *Task) save(done bool) error {
 		dstd = task.TaskPath.Done
 	}
 	dst := filepath.Join(dstd, "task.json")
-	return ioutil.WriteFile(dst, data, 0644)
+	return ioutil.WriteFile(dst, data, os.ModePerm)
 }
 
 func (task *Task) RenameDoing2DoneHandler(dir, name string) error {

@@ -60,13 +60,16 @@ func StartTasks(ctx ctx.Ctx, event fsnotify.Event) {
 	}
 	err := touchTaskRunning(ctx)
 	if err != nil {
+		util.LogError("Failed to touch running file", err)
 		return
 	}
 
 	msg := "=> Success to execute all tasks!"
 	defer func() {
-		rmTaskRunning(ctx)
 		util.LogInfo(msg)
+		if err := rmTaskRunning(ctx); err != nil {
+			util.LogError("Failed to remove running file", err)
+		}
 	}()
 	err = handleTasks(ctx)
 	if err != nil {

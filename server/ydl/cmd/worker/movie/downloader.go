@@ -52,7 +52,7 @@ func buildCmd(task *task.Task) (*exec.Cmd, string) {
 	args = append(args, key)
 
 	absYoutubeDl := filepath.Join(ctx.WorkDirs.Lib, ctx.DownloadLib.Name)
-	cmd := exec.Command(absYoutubeDl, args...)
+	cmd := exec.Command(absYoutubeDl, args...) //#nosec G204
 	cmd.Dir = dstd
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
