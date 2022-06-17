@@ -119,7 +119,7 @@ func ReadFileIfExist(filePath string) (string, error) {
 }
 
 func WriteFile(filePath, data string) error {
-	return ioutil.WriteFile(filePath, []byte(data), os.ModePerm)
+	return ioutil.WriteFile(filePath, []byte(data), 0664) //#nosec G306
 }
 
 func IsEmptyDir(dirPath string) (bool, error) {
@@ -230,7 +230,8 @@ func CreateDirsIfNotExist(dirPaths []string) error {
 		if Exists(dir) {
 			continue
 		}
-		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		//#nosec G301
+		if err := os.MkdirAll(dir, 0775); err != nil {
 			return err
 		}
 	}

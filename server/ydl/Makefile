@@ -18,7 +18,7 @@ run: check sec clean
 	@go run ./main.go
 
 sec:
-	@gosec ./...
+	@gosec --color=false ./...
 	@echo "[OK] Go security check was completed!"
 
 build: check sec clean

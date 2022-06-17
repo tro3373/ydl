@@ -65,7 +65,7 @@ func newTaskInner(ctx ctx.Ctx, jsonPath string, forQueue bool) (*Task, error) {
 		findTargetDir = task.TaskPath.Done
 	} else {
 		if forQueue {
-			err = os.MkdirAll(doingDir, os.ModePerm)
+			err = os.MkdirAll(doingDir, 0775) //#nosec G301
 			if err != nil {
 				return &task, err
 			}
@@ -187,7 +187,7 @@ func (task *Task) HasAudio() bool {
 func (task *Task) Done() error {
 	doneDir := task.TaskPath.Done
 	if !util.Exists(doneDir) {
-		err := os.MkdirAll(doneDir, os.ModePerm)
+		err := os.MkdirAll(doneDir, 0775) //#nosec G301
 		if err != nil {
 			return err
 		}
@@ -228,7 +228,7 @@ func (task *Task) save(done bool) error {
 		dstd = task.TaskPath.Done
 	}
 	dst := filepath.Join(dstd, "task.json")
-	return ioutil.WriteFile(dst, data, os.ModePerm)
+	return ioutil.WriteFile(dst, data, 0664) //#nosec G306
 }
 
 func (task *Task) RenameDoing2DoneHandler(dir, name string) error {

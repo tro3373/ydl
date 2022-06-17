@@ -139,16 +139,17 @@ func (h *Handler) saveRequest(dstRootDir string, req request.Req) error {
 	req.CreatedAt = timestamp
 
 	if !util.Exists(dstRootDir) {
-
-		if err := os.MkdirAll(dstRootDir, os.ModePerm); err != nil {
-			return fmt.Errorf("Failed to create directory %s %s: %w", dstRootDir, os.ModePerm, err)
+		//#nosec G301
+		if err := os.MkdirAll(dstRootDir, 0775); err != nil {
+			return fmt.Errorf("Failed to create directory %s %d: %w", dstRootDir, 0775, err)
 		}
 	}
 	dstFile := h.getJsonPath(dstRootDir, key)
 
 	h.logger.Info("==> Saving request..", zap.String("dstFile", dstFile))
 	data, _ := json.MarshalIndent(req, "", " ")
-	return ioutil.WriteFile(dstFile, data, os.ModePerm)
+	//#nosec G306
+	return ioutil.WriteFile(dstFile, data, 0664)
 }
 
 func (h *Handler) removeRequest(rootDir, key string) error {
