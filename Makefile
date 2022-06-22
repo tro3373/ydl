@@ -29,25 +29,25 @@ build-image:
 	@echo "==> $@ $(STAGE)" && \
 	docker-compose -f docker-compose.$(STAGE).yml build $(arg)
 
-build-app:
-	@echo "==> $@ $(STAGE)" && \
-	docker-compose -f docker-compose.dev.yml \
-		run --rm -it \
-		app make build
 build-client:
 	@echo "==> $@ $(STAGE)" && \
 	docker-compose -f docker-compose.dev.yml \
 		run --rm -it \
 		client make build STAGE=$(STAGE)
-build: build-app build-client
+build-app:
+	@echo "==> $@ $(STAGE)" && \
+	docker-compose -f docker-compose.dev.yml \
+		run --rm -it \
+		app make build
+build: build-client build-app
 
 prepare: check
 	@echo "==> $@ $(STAGE)" && \
 	(docker images |grep ydl-dev >&/dev/null || make STAGE=dev build-image) && \
 	if [[ ${STAGE} == "prd" ]]; then \
 		(docker images |grep 'ydl ' >&/dev/null || make STAGE=prd build-image) && \
-		(test -e ./server/ydl/ydl || make STAGE=prd build-app) &&  \
-		(test -e ./client/back/dist || make STAGE=prd build-client); \
+		(test -e ./client/back/dist || make STAGE=prd build-client) && \
+		(test -e ./server/ydl/ydl || make STAGE=prd build-app); \
 	fi
 
 up: start logsf

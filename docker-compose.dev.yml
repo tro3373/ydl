@@ -31,6 +31,7 @@ services:
     working_dir: /go/src
     volumes:
       - ./server/ydl:/go/src
+      - ./client/back/dist:/go/src/assets
       - ./data/work:/go/src/work
       - ./data/ydl:/go/pkg
     ports:

@@ -6,7 +6,9 @@ RUN deps="git curl ffmpeg python3" && \
     apt-get install -y --no-install-recommends ${deps} && \
     rm -rf /var/lib/apt/lists/* && \
     ln -s /usr/bin/python3 /usr/bin/python && \
-    go install github.com/cosmtrek/air@latest
+    go install github.com/cosmtrek/air@latest && \
+    go install github.com/securego/gosec/v2/cmd/gosec@latest && \
+    go install github.com/rakyll/statik@latest
 
 WORKDIR /root
 

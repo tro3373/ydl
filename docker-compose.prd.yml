@@ -1,30 +1,30 @@
 version: '3.8'
 services:
-  nginx:
-    image: nginx
-    container_name: ydl-nginx
-    restart: always
-    ports:
-      - 8080:80
-      # - 443:443
-    environment:
-      TZ: Asia/Tokyo
-    volumes:
-      - ./server/nginx/conf.d/app.prd.conf:/etc/nginx/conf.d/default.conf
-      - ./server/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./server/nginx/proxy.conf:/etc/nginx/proxy.conf
-      - ./server/nginx/mime.types:/etc/nginx/conf/mime.types
-      - ./client/back/dist:/usr/share/nginx/html
-      - ./data/work:/usr/share/nginx/html/resource
-    # links:
-    #   - app
-    depends_on:
-      - app
-    logging:
-      driver: json-file
-      options:
-        max-size: 10m
-        max-file: 3
+  # nginx:
+  #   image: nginx
+  #   container_name: ydl-nginx
+  #   restart: always
+  #   ports:
+  #     - 8080:80
+  #     # - 443:443
+  #   environment:
+  #     TZ: Asia/Tokyo
+  #   volumes:
+  #     - ./server/nginx/conf.d/app.prd.conf:/etc/nginx/conf.d/default.conf
+  #     - ./server/nginx/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./server/nginx/proxy.conf:/etc/nginx/proxy.conf
+  #     - ./server/nginx/mime.types:/etc/nginx/conf/mime.types
+  #     - ./client/back/dist:/usr/share/nginx/html
+  #     - ./data/work:/usr/share/nginx/html/resource
+  #   # links:
+  #   #   - app
+  #   depends_on:
+  #     - app
+  #   logging:
+  #     driver: json-file
+  #     options:
+  #       max-size: 10m
+  #       max-file: 3
   app:
     image: ydl:1.0.0
     build:
