@@ -37,8 +37,6 @@ func startInner(ctx ctx.Ctx) error {
 
 	r.Use(middleware.NewRecordUaAndTimeHandler(logger))
 	r.Use(middleware.NewResourceHandler("/resource", "./work", logger))
-	// @see [GolangのGin/bindataでシングルバイナリを試してみた(+React) - Qiita](https://qiita.com/wadahiro/items/4173788d54f028936723)
-	// @see [【GO】gin + statikのシングルバイナリファイルサーバ | Narumium Blog](https://blog.narumium.net/2019/06/07/%E3%80%90go%E3%80%91gin-statik%E3%81%AE%E3%82%B7%E3%83%B3%E3%82%B0%E3%83%AB%E3%83%90%E3%82%A4%E3%83%8A%E3%83%AA%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B5%E3%83%BC%E3%83%90/)
 	statikFS, err := fs.New()
 	if err != nil {
 		return fmt.Errorf("Failed to initialize statik fs: %w", err)

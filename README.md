@@ -6,10 +6,10 @@ make STAGE=prd up
 ```
 
 ```
-All request handle by proxied api
+All request handle
 
-              /api  proxy    :3000
--- nginx ------------------> server/ydl
+    / all request     :3000
+--------------------> server/ydl
 ```
 
 ## dev
@@ -31,12 +31,14 @@ SPA asssets embeded in api will be ignored
 ---
 
 # TODO
+# DONE
 - assets empbeded in api for prd
+	- [GolangのGin/bindataでシングルバイナリを試してみた(+React) - Qiita](https://qiita.com/wadahiro/items/4173788d54f028936723)
+	- [【GO】gin + statikのシングルバイナリファイルサーバ | Narumium Blog](https://blog.narumium.net/2019/06/07/%E3%80%90go%E3%80%91gin-statik%E3%81%AE%E3%82%B7%E3%83%B3%E3%82%B0%E3%83%AB%E3%83%90%E3%82%A4%E3%83%8A%E3%83%AA%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B5%E3%83%BC%E3%83%90/)
     - [The easiest way to embed static files into a binary file in your Golang app (no external dependencies) - DEV Community](https://dev.to/koddr/the-easiest-way-to-embed-static-files-into-a-binary-file-in-your-golang-app-no-external-dependencies-43pc)
 - gosec
 - go generate
 
-# DONE
 - gin static
     - [【Go】gin packageを使用して簡単なweb アプリケーションを作成する - Colorful Bullet](https://blog.bltinc.co.jp/entry/2020/02/04/141721)
     - [Go で作る SPA 用バックエンド - l12a](https://lnly.hatenablog.com/entry/2020/02/26/225722)
