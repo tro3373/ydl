@@ -5,7 +5,7 @@ name := $(shell grep module $(current_dir)/go.mod|head -1|sed -e 's,^.*/,,g')
 
 .DEFAULT_GOAL := run
 
-depends_cmds := go gosec
+depends_cmds := go gosec statik
 check:
 	@for cmd in ${depends_cmds}; do command -v $$cmd >&/dev/null || (echo "No $$cmd command" && exit 1); done
 	@echo "[OK] check ok!"
@@ -14,14 +14,18 @@ clean:
 	@for d in $(name); do if [[ -e $${d} ]]; then echo "==> Removing $${d}.." && rm -rf $${d}; fi done
 	@echo "[OK] clean ok!"
 
-run: check sec clean
+run: check clean generate
 	@go run ./main.go
+
+generate:
+	@statik -f -src=./assets/
+	@echo "[OK] Files added to /statik!"
 
 sec:
 	@gosec --color=false ./...
 	@echo "[OK] Go security check was completed!"
 
-build: check sec clean
+build: check clean generate sec
 	@env GOOS=linux go build -ldflags="-s -w"
 
 deps:
