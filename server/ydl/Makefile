@@ -21,12 +21,22 @@ generate:
 	@statik -f -src=./assets/
 	@echo "[OK] Files added to /statik!"
 
+generate-if-needed:
+	@if [[ ! -e ./statik/statik.go ]]; then \
+		make generate; \
+	fi
+
 sec:
 	@gosec --color=false ./...
 	@echo "[OK] Go security check was completed!"
 
-build: check clean generate sec
+build: check clean generate-if-needed sec
 	@env GOOS=linux go build -ldflags="-s -w"
+
+build-android: check clean generate-if-needed sec
+	@env GOOS=android GOARCH=arm64 go build -ldflags="-s -w"
+	@echo "is api url :3000?"
+	@echo "Do in termux, pkg install proot && termux-chroot && echo 'nameserver 8.8.8.8' >/etc/resolv.conf"
 
 deps:
 	@go list -m all
