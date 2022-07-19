@@ -259,6 +259,10 @@ export default {
     },
   },
   async mounted() {
+    const reqUrl = this.$route.query.url;
+    if (reqUrl) {
+      this.url = reqUrl;
+    }
     // this.$refs.form.validate(); // for submit icon not enable
     this.getRequestResultsWithUuid();
   },
