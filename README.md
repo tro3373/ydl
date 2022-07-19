@@ -31,6 +31,10 @@ SPA asssets embeded in api will be ignored
 ---
 
 # TODO
+- Remove STAGE option from `make STAGE=prd up`
+- can use in userland?
+- request in doing queue not shown
+
 # DONE
 - assets empbeded in api for prd
 	- [GolangのGin/bindataでシングルバイナリを試してみた(+React) - Qiita](https://qiita.com/wadahiro/items/4173788d54f028936723)
