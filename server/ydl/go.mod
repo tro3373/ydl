@@ -8,6 +8,7 @@ require (
 	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.7.7
 	github.com/pkg/errors v0.8.1
+	github.com/rakyll/statik v0.1.7
 	github.com/spf13/cobra v1.4.0
 	go.uber.org/zap v1.21.0
 )
@@ -25,7 +26,6 @@ require (
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 // indirect
-	github.com/rakyll/statik v0.1.7 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
