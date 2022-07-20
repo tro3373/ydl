@@ -31,6 +31,7 @@ SPA asssets embeded in api will be ignored
 ---
 
 # TODO
+- Refactor prd build sequence
 - Remove STAGE option from `make STAGE=prd up`
 - can use in userland?
 - request in doing queue not shown
