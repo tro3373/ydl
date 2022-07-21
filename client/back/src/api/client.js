@@ -3,24 +3,35 @@
 import Const from '../constants/constants.js';
 import BaseClient from './baseClient.js';
 
-const ENDPOINT = {
-  LIST: {
-    url: `${Const.API_PREFIX}`,
-    method: 'get',
-  },
-  DL_REQUEST: {
-    url: `${Const.API_PREFIX}`,
-    method: 'post',
-  },
-  DELETE_REQUEST: {
-    url: `${Const.API_PREFIX}/{key}`,
-    method: 'delete',
-  },
-};
-
 const ApiClient = class ApiClient extends BaseClient {
   constructor() {
     super('ApiClient');
+    const apiPrefix = this.getApiPrefix();
+    this.ENDPOINT = {
+      LIST: {
+        url: apiPrefix,
+        method: 'get',
+      },
+      DL_REQUEST: {
+        url: apiPrefix,
+        method: 'post',
+      },
+      DELETE_REQUEST: {
+        url: `${apiPrefix}/{key}`,
+        method: 'delete',
+      },
+    };
+  }
+
+  getApiPrefix() {
+    let apiPrefix = Const.API_PREFIX;
+    if (apiPrefix) {
+      return apiPrefix;
+    }
+    const host = location.host;
+    const url = location.toString();
+    const scheme = url.split(':')[0];
+    return `${scheme}://${host}/api`;
   }
 
   setUuid(uuid) {
@@ -30,7 +41,7 @@ const ApiClient = class ApiClient extends BaseClient {
 
   async list(params) {
     const res = await super.request({
-      ...ENDPOINT.LIST,
+      ...this.ENDPOINT.LIST,
       params,
     });
     return res.data;
@@ -38,7 +49,7 @@ const ApiClient = class ApiClient extends BaseClient {
 
   async downloadRequest(params) {
     const res = await super.request({
-      ...ENDPOINT.DL_REQUEST,
+      ...this.ENDPOINT.DL_REQUEST,
       data: params,
     });
     return res.data;
@@ -47,7 +58,7 @@ const ApiClient = class ApiClient extends BaseClient {
   async deleteRequest(key) {
     const res = await super.request(
       {
-        ...ENDPOINT.DELETE_REQUEST,
+        ...this.ENDPOINT.DELETE_REQUEST,
       },
       { key }
     );
