@@ -189,7 +189,7 @@ export default {
   },
   data() {
     const inputInit = {
-      url: '',
+      url: this.$route.query.url || '',
       title: '',
       artist: '',
       album: '',
@@ -198,7 +198,8 @@ export default {
     const input = JSON.parse(
       localStorage.getItem(Const.LOCAL_STRAGE_KEY.CACHE) || JSON.stringify(inputInit)
     );
-    const uuid = localStorage.getItem(Const.LOCAL_STRAGE_KEY.UUID) || util.uuid();
+    const uuid =
+      this.$route.query.uuid || localStorage.getItem(Const.LOCAL_STRAGE_KEY.UUID) || util.uuid();
     const visited = JSON.parse(localStorage.getItem(Const.LOCAL_STRAGE_KEY.VISITED) || '[]');
     return {
       ...input,
@@ -259,10 +260,6 @@ export default {
     },
   },
   async mounted() {
-    const reqUrl = this.$route.query.url;
-    if (reqUrl) {
-      this.url = reqUrl;
-    }
     // this.$refs.form.validate(); // for submit icon not enable
     this.getRequestResultsWithUuid();
   },
