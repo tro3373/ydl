@@ -30,13 +30,20 @@ sec:
 	@gosec --color=false ./...
 	@echo "[OK] Go security check was completed!"
 
-build: check clean generate-if-needed sec
-	@env GOOS=linux go build -ldflags="-s -w"
+# build: check clean generate-if-needed sec
+# 	@env GOOS=linux go build -ldflags="-s -w"
+build:
+	@pre_env="env GOOS=linux " make _build
 
-build-android: check clean generate-if-needed sec
-	@env GOOS=android GOARCH=arm64 go build -ldflags="-s -w"
-	@echo "is api url :3000?"
-	@echo "Do in termux, pkg install proot && termux-chroot && echo 'nameserver 8.8.8.8' >/etc/resolv.conf"
+# build-android: check clean generate-if-needed sec
+# 	@env GOOS=android GOARCH=arm64 go build -ldflags="-s -w"
+# 	@echo "is api url :3000?"
+# 	@echo "Do in termux, pkg install proot && termux-chroot && echo 'nameserver 8.8.8.8' >/etc/resolv.conf"
+build-android:
+	@pre_env="env GOOS=android GOARCH=arm64" make _build
+
+_build: check clean generate-if-needed sec
+	@$(pre_env) go build -ldflags="-s -w"
 
 deps:
 	@go list -m all
