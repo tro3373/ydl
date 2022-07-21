@@ -8,7 +8,8 @@ make STAGE=prd up
 ```
 All request handle
 
-    / all request     :3000
+    all request     :3000
+   /
 --------------------> server/ydl
 ```
 
@@ -18,7 +19,7 @@ make up
 ```
 
 ```
-SPA asssets embeded in api will be ignored
+SPA asssets embeded in api will be orverrite
 
               /api  proxy    :3000
 -- nginx ------------------> server/ydl
@@ -31,8 +32,15 @@ SPA asssets embeded in api will be ignored
 ---
 
 # TODO
-- Refactor prd build sequence
-- Remove STAGE option from `make STAGE=prd up`
+- prd ビルド見直し
+    - Refactor prd build sequence
+    - Remove STAGE option from `make STAGE=prd up`
+- Android ビルド
+    - binary for android
+    - client api url determine from current requested url
+- git hub release
+- docker hub release
+- go test
 - can use in userland?
 - request in doing queue not shown
 
