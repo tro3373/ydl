@@ -1,33 +1,33 @@
-CONTAINER_app=ydl
-CONTAINER_ngx=nginx
-CONTAINER_client=client
-STAGE=dev
-arg=
+CONTAINER_app := ydl
+CONTAINER_ngx := nginx
+CONTAINER_client := client
+STAGE := dev
+ARG :=
 
-in_app := cd ./server/ydl
-in_client := cd ./client/back
+IN_APP := cd ./server/ydl
+IN_CLIENT := cd ./client/back
 
 .DEFAULT_GOAL := up
 
 check-app:
-	@${in_app} && make check
+	@${IN_APP} && make check
 check-client:
-	@${in_client} && make check
+	@${IN_CLIENT} && make check
 depends_cmds := docker docker-compose
 check:
 	@for cmd in ${depends_cmds}; do command -v $$cmd >&/dev/null || (echo "No $$cmd command" && exit 1); done
 check-all: check-app check-client check
 
 clean-app:
-	@${in_app} && make clean
+	@${IN_APP} && make clean
 clean-client:
-	@${in_client} && make clean
+	@${IN_CLIENT} && make clean
 clean: clean-app clean-client
 
 
 build-image:
 	@echo "==> $@ $(STAGE)" && \
-	docker-compose -f docker-compose.$(STAGE).yml build $(arg)
+	docker-compose -f docker-compose.$(STAGE).yml build $(ARG)
 
 build-client:
 	@echo "==> $@ $(STAGE)" && \
@@ -52,17 +52,17 @@ prepare: check
 
 up: start logsf
 start: prepare
-	docker-compose -f docker-compose.$(STAGE).yml up -d $(arg)
+	docker-compose -f docker-compose.$(STAGE).yml up -d $(ARG)
 stop: down
 down:
-	docker-compose -f docker-compose.$(STAGE).yml down $(arg)
+	docker-compose -f docker-compose.$(STAGE).yml down $(ARG)
 restart:
-	docker-compose -f docker-compose.$(STAGE).yml restart $(arg)
+	docker-compose -f docker-compose.$(STAGE).yml restart $(ARG)
 
 logs:
-	docker-compose -f docker-compose.$(STAGE).yml logs $(arg)
+	docker-compose -f docker-compose.$(STAGE).yml logs $(ARG)
 logsf:
-	docker-compose -f docker-compose.$(STAGE).yml logs -f $(arg)
+	docker-compose -f docker-compose.$(STAGE).yml logs -f $(ARG)
 
 console:
 	docker exec -it $(CONTAINER_app)-app /bin/sh --login
