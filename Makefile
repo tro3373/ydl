@@ -12,6 +12,9 @@ IN_CLIENT := cd ./client/back
 
 .DEFAULT_GOAL := up
 
+tag:
+	@tag="v${APP_VER}" && git tag "$$tag" && echo "==> $$tag tagged."
+
 check-app:
 	@${IN_APP} && make check
 check-client:
