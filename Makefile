@@ -1,6 +1,9 @@
-CONTAINER_app := ydl
 CONTAINER_ngx := nginx
 CONTAINER_client := client
+export OWNER := $(shell git config --get remote.origin.url |sed -e 's,^.*:,,g' -e 's,/.*,,g')
+export APP_NAME := ydl
+export APP_VER := 1.0.0
+
 STAGE := dev
 ARG :=
 
@@ -25,15 +28,22 @@ clean-client:
 clean: clean-app clean-client
 
 
-build-image:
+build-image-dev:
 	@echo "==> $@ $(STAGE)" && \
-	docker-compose -f docker-compose.$(STAGE).yml build $(ARG)
+	docker-compose -f docker-compose.dev.yml build $(ARG)
+
+build-image-prd:
+	@echo "==> $@ $(STAGE)" && \
+	docker-compose -f docker-compose.prd.yml build $(ARG)
+
+push-image:
+	@docker push $(OWNER)/$(APP_NAME):$(APP_VER)
 
 build-client:
 	@echo "==> $@ $(STAGE)" && \
 	docker-compose -f docker-compose.dev.yml \
 		run --rm -it \
-		client make build STAGE=$(STAGE)
+		client make build STAGE=prd
 build-app:
 	@echo "==> $@ $(STAGE)" && \
 	docker-compose -f docker-compose.dev.yml \
@@ -65,7 +75,7 @@ logsf:
 	docker-compose -f docker-compose.$(STAGE).yml logs -f $(ARG)
 
 console:
-	docker exec -it $(CONTAINER_app)-app /bin/sh --login
+	docker exec -it $(APP_NAME)-app /bin/sh --login
 console_client:
 	docker exec -it $(CONTAINER_client) /bin/bash --login
 console_nginx:

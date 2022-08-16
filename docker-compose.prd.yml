@@ -26,21 +26,21 @@ services:
   #       max-size: 10m
   #       max-file: 3
   app:
-    image: ydl:1.0.0
+    image: ${OWNER}/${APP_NAME}:${APP_VER}
     build:
       context: ./server/ydl
       dockerfile: Dockerfile
     container_name: ydl-app
     restart: always
-    environment:
-      - TZ=Asia/Tokyo
-    working_dir: /root
-    entrypoint: /root/ydl
+    # environment:
+    #   - TZ=Asia/Tokyo
+    # working_dir: /root
+    # entrypoint: /root/ydl
     volumes:
       - ./server/ydl/ydl:/root/ydl
       - ./data/work:/root/work
-    ports:
-      - 3000:3000
+    # ports:
+    #   - 3000:3000
     # tty:
     #   true
     logging:

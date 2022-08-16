@@ -1,0 +1,50 @@
+project_name: ydl
+before:
+  hooks:
+    - go mod tidy
+    - go install github.com/rakyll/statik@latest
+    - statik -f -src=../../client/back/dist
+builds:
+  - main: .
+    binary: ydl
+    ldflags:
+      - -s -w
+      - -X cmd.Version={{.Version}}
+      - -X cmd.Revision={{.ShortCommit}}
+    goos:
+      - linux
+      - android
+      # - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ignore:
+      - goos: linux
+        goarch: arm64
+      - goos: android
+        goarch: amd64
+archives:
+  - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    replacements:
+      darwin: darwin
+      linux: linux
+      windows: windows
+      386: i386
+      amd64: x86_64
+    format_overrides:
+      - goos: windows
+        format: zip
+# release:
+#   prerelease: auto
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'

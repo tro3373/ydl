@@ -31,7 +31,7 @@ services:
     working_dir: /go/src
     volumes:
       - ./server/ydl:/go/src
-      - ./client/back/dist:/go/src/assets
+      - ./client/back:/client/back
       - ./data/work:/go/src/work
       - ./data/ydl:/go/pkg
     ports:
@@ -40,8 +40,8 @@ services:
       true
   client:
     image: node:16
-    # build:
-    #   context: ./client/back
+    build:
+      context: ./client/back
     container_name: client
     restart: always
     environment:

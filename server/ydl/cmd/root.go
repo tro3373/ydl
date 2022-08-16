@@ -10,6 +10,9 @@ import (
 	"github.com/tro3373/ydl/cmd/worker/ctx"
 )
 
+var Version string
+var Revision string
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "ydl",
@@ -28,6 +31,7 @@ to quickly create a Cobra application.`,
 			fmt.Println("Failed to new ctx Error", err)
 			os.Exit(1)
 		}
+		fmt.Println("==> Starting Version", Version, "Revision", Revision)
 		fmt.Println("==> Using", ctx.WorkDir, "as work directory.")
 		go worker.Start(ctx)
 		api.Start(ctx)
