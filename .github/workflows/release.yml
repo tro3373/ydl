@@ -16,7 +16,6 @@ jobs:
         with:
           node-version: 16
       - name: Actions Cache
-        working-directory: client/back
         uses: actions/cache@v3
         id: node_modules_cache_id
         env:
@@ -24,44 +23,41 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-      - run: echo '${{ toJSON(steps.node_modules_cache_id.outputs) }}'
-      - name: Install NPM Packages
+      - name: Echo cache outputs
+        run: echo '${{ toJSON(steps.node_modules_cache_id.outputs) }}'
         working-directory: client/back
+      - name: Install NPM Packages
         if: ${{ steps.node_modules_cache_id.outputs.cache-hit != 'true' }}
         run: npm install
-      - name: Build Client
         working-directory: client/back
+      - name: Build Client
         run: npm run build-prd
+        working-directory: client/back
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
           go-version: 1.18
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v1
-        working-directory: server/ydl
         with:
           version: latest
           args: release --rm-dist
+          workdir: server/ydl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Untar release
-        working-directory: server/ydl
-        shell: bash
         run: tar xvfpz dist/*linux*tar.gz
+        working-directory: server/ydl
       - name: Build Image
-        # run: docker build -t ghcr.io/${OWNER,,}/texturepacker:${VERSION} .
         run: make build-image-prd
-        # env:
-        #   OWNER: ${{ github.repository_owner }}
-        #   VERSION: ${{ matrix.version }}
-      - name: Docker Login
-        run: echo $DOCKER_PASS | docker login -u ${OWNER,,} --password-stdin
         env:
           OWNER: ${{ github.repository_owner }}
-          DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+      - name: Docker Login
+        run: echo $DOCKER_HUB_TOKEN | docker login -u ${OWNER} --password-stdin
+        env:
+          OWNER: ${{ github.repository_owner }}
+          DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
       - name: Docker Push
-        # run: docker push ghcr.io/${OWNER,,}/texturepacker:${VERSION}
         run: make push-image
-        # env:
-        #   OWNER: ${{ github.repository_owner }}
-        #   VERSION: ${{ matrix.version }}
+        env:
+          OWNER: ${{ github.repository_owner }}

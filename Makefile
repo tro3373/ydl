@@ -1,6 +1,6 @@
 CONTAINER_ngx := nginx
 CONTAINER_client := client
-export OWNER := $(shell git config --get remote.origin.url |sed -e 's,^.*:,,g' -e 's,/.*,,g')
+export OWNER := $(if $(OWNER),$(OWNER),$(shell git config --get remote.origin.url |sed -e 's,^.*:,,g' -e 's,/.*,,g'))
 export APP_NAME := ydl
 export APP_VER := 1.0.0
 
@@ -32,11 +32,11 @@ clean: clean-app clean-client
 
 
 build-image-dev:
-	@echo "==> $@ $(STAGE)" && \
+	@echo "==> $@" && \
 	docker-compose -f docker-compose.dev.yml build $(ARG)
 
 build-image-prd:
-	@echo "==> $@ $(STAGE)" && \
+	@echo "==> $@" && \
 	docker-compose -f docker-compose.prd.yml build $(ARG)
 
 push-image:
