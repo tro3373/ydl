@@ -2,7 +2,8 @@
 
 ## prd
 ```
-make STAGE=prd up
+ln -s docker-compose.prd.yml docker-compose.yml
+make up
 ```
 
 ```
@@ -15,6 +16,7 @@ All request handle
 
 ## dev
 ```
+ln -s docker-compose.dev.yml docker-compose.yml
 make up
 ```
 
