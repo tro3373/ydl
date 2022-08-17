@@ -21,6 +21,7 @@ check-client:
 	@${IN_CLIENT} && make check
 depends_cmds := docker docker-compose
 check:
+	@test -e docker-compose.yml || (echo "==> No docker-compose.yml exist" 1>&2 && exit 1)
 	@for cmd in ${depends_cmds}; do command -v $$cmd >&/dev/null || (echo "No $$cmd command" && exit 1); done
 check-all: check-app check-client check
 
@@ -31,58 +32,53 @@ clean-client:
 clean: clean-app clean-client
 
 
-build-image-dev:
-	@echo "==> $@" && \
-	docker-compose -f docker-compose.dev.yml build $(ARG)
-
-build-image-prd:
-	@echo "==> $@" && \
-	docker-compose -f docker-compose.prd.yml build $(ARG)
+build-image-dev: _build-image-dev
+build-image-prd: _build-image-prd
+_build-image-%:
+	@echo "==> $@"
+	@docker-compose -f docker-compose.${*}.yml build $(ARG)
+	@echo "Done"
 
 push-image:
 	@docker push $(OWNER)/$(APP_NAME):$(APP_VER)
 
 build-client:
-	@echo "==> $@ $(STAGE)" && \
-	docker-compose -f docker-compose.dev.yml \
+	@echo "==> $@ $(STAGE)"
+	@docker-compose -f docker-compose.dev.yml \
 		run --rm -it \
 		client make build STAGE=prd
 build-app:
-	@echo "==> $@ $(STAGE)" && \
-	docker-compose -f docker-compose.dev.yml \
+	@echo "==> $@ $(STAGE)"
+	@docker-compose -f docker-compose.dev.yml \
 		run --rm -it \
 		app make build
 build: build-client build-app
 
 prepare: check
-	@echo "==> $@ $(STAGE)" && \
-	(docker images |grep ydl-dev >&/dev/null || make STAGE=dev build-image) && \
-	if [[ ${STAGE} == "prd" ]]; then \
-		(docker images |grep 'ydl ' >&/dev/null || make STAGE=prd build-image) && \
-		(test -e ./client/back/dist || make STAGE=prd build-client) && \
-		(test -e ./server/ydl/ydl || make STAGE=prd build-app); \
+	@echo "==> $@ $(STAGE)"
+	@if [[ ${STAGE} == "dev" ]]; then \
+		docker images |grep ydl-dev >&/dev/null || make build-image-dev; \
 	fi
 
 up: start logsf
 start: prepare
-	docker-compose -f docker-compose.$(STAGE).yml up -d $(ARG)
+	@docker-compose -f docker-compose.yml up -d $(ARG)
 stop: down
 down:
-	docker-compose -f docker-compose.$(STAGE).yml down $(ARG)
+	@docker-compose -f docker-compose.yml down $(ARG)
 restart:
-	docker-compose -f docker-compose.$(STAGE).yml restart $(ARG)
+	@docker-compose -f docker-compose.yml restart $(ARG)
 
 logs:
-	docker-compose -f docker-compose.$(STAGE).yml logs $(ARG)
+	@docker-compose -f docker-compose.yml logs $(ARG)
 logsf:
-	docker-compose -f docker-compose.$(STAGE).yml logs -f $(ARG)
+	@docker-compose -f docker-compose.yml logs -f $(ARG)
 
 console:
-	docker exec -it $(APP_NAME)-app /bin/sh --login
+	@docker exec -it $(APP_NAME)-app /bin/sh --login
 console_client:
-	docker exec -it $(CONTAINER_client) /bin/bash --login
+	@docker exec -it $(CONTAINER_client) /bin/bash --login
 console_nginx:
-	docker exec -it $(CONTAINER_ngx) /bin/bash --login
+	@docker exec -it $(CONTAINER_ngx) /bin/bash --login
 reload-nginx:
-	# docker kill $(CONTAINER_ngx)
-	docker exec -it $(CONTAINER_ngx) nginx -s reload
+	@docker exec -it $(CONTAINER_ngx) nginx -s reload

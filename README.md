@@ -32,19 +32,19 @@ SPA asssets embeded in api will be orverrite
 ---
 
 # TODO
-- prd ビルド見直し
-    - Refactor prd build sequence
-    - Remove STAGE option from `make STAGE=prd up`
-- Android ビルド
-    - binary for android
-    - client api url determine from current requested url
-- git hub release
-- docker hub release
 - go test
 - can use in userland?
 - request in doing queue not shown
 
 # DONE
+- prd ビルド見直し
+    - Refactor prd build sequence
+    - Remove STAGE option from `make STAGE=prd up`
+- git hub release
+- docker hub release
+- Android ビルド
+    - binary for android
+    - client api url determine from current requested url
 - assets empbeded in api for prd
 	- [GolangのGin/bindataでシングルバイナリを試してみた(+React) - Qiita](https://qiita.com/wadahiro/items/4173788d54f028936723)
 	- [【GO】gin + statikのシングルバイナリファイルサーバ | Narumium Blog](https://blog.narumium.net/2019/06/07/%E3%80%90go%E3%80%91gin-statik%E3%81%AE%E3%82%B7%E3%83%B3%E3%82%B0%E3%83%AB%E3%83%90%E3%82%A4%E3%83%8A%E3%83%AA%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B5%E3%83%BC%E3%83%90/)

@@ -37,7 +37,7 @@ services:
     # working_dir: /root
     # entrypoint: /root/ydl
     volumes:
-      - ./server/ydl/ydl:/root/ydl
+      # - ./server/ydl/ydl:/root/ydl
       - ./data/work:/root/work
     # ports:
     #   - 3000:3000
