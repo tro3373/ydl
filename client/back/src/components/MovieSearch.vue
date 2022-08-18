@@ -189,7 +189,7 @@ export default {
   },
   data() {
     const inputInit = {
-      url: this.$route.query.url || '',
+      url: '',
       title: '',
       artist: '',
       album: '',
@@ -198,6 +198,9 @@ export default {
     const input = JSON.parse(
       localStorage.getItem(Const.LOCAL_STRAGE_KEY.CACHE) || JSON.stringify(inputInit)
     );
+    if (!util.isEmpty(this.$route.query.url)) {
+      input.url = this.$route.query.url;
+    }
     const uuid =
       this.$route.query.uuid || localStorage.getItem(Const.LOCAL_STRAGE_KEY.UUID) || util.uuid();
     const visited = JSON.parse(localStorage.getItem(Const.LOCAL_STRAGE_KEY.VISITED) || '[]');
