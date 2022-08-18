@@ -2,7 +2,7 @@ CONTAINER_ngx := nginx
 CONTAINER_client := client
 export OWNER := $(if $(OWNER),$(OWNER),$(shell git config --get remote.origin.url |sed -e 's,^.*:,,g' -e 's,/.*,,g'))
 export APP_NAME := ydl
-export APP_VER := 1.0.0
+export APP_VER := 1.0.1
 
 DCY := docker-compose.yml
 export STAGE := $(if $(STAGE),$(STAGE),$(shell if [[ -e $(DCY) ]] && readlink $(DCY) |grep prd.yml>&/dev/null; then echo prd; else echo dev; fi))
