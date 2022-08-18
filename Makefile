@@ -42,6 +42,8 @@ _build-image-%:
 
 push-image:
 	@docker push $(OWNER)/$(APP_NAME):$(APP_VER)
+pull-image:
+	@docker pull $(OWNER)/$(APP_NAME):$(APP_VER)
 
 build-client:
 	@docker-compose -f docker-compose.dev.yml \
@@ -80,3 +82,10 @@ console_nginx:
 	@docker exec -it $(CONTAINER_ngx) /bin/bash --login
 reload-nginx:
 	@docker exec -it $(CONTAINER_ngx) nginx -s reload
+
+link-dev: _link-dev
+link-prd: _link-prd
+_link-%:
+	@if [[ -e $(DCY) ]]; then rm $(DCY); fi
+	@ln -s docker-compose.${*}.yml $(DCY)
+	@echo "Done. linked to $$(readlink $(DCY))"

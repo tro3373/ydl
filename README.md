@@ -2,7 +2,8 @@
 
 ## prd
 ```
-ln -s docker-compose.prd.yml docker-compose.yml
+make link-prd
+make pull-image
 make up
 ```
 
@@ -16,7 +17,7 @@ All request handle
 
 ## dev
 ```
-ln -s docker-compose.dev.yml docker-compose.yml
+make link-dev
 make up
 ```
 
