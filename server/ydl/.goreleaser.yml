@@ -9,8 +9,8 @@ builds:
     binary: ydl
     ldflags:
       - -s -w
-      - -X cmd.Version={{.Version}}
-      - -X cmd.Revision={{.ShortCommit}}
+      - -X github.com/tro3373/ydl/cmd.Version={{.Version}}
+      - -X github.com/tro3373/ydl/cmd.Revision={{.ShortCommit}}
     goos:
       - linux
       - android
