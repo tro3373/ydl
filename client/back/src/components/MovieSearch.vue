@@ -25,6 +25,7 @@
             </v-card-title>
 
             <v-card-actions>
+              <v-chip class="ma-2"> ver:{{ ver }} </v-chip>
               <v-chip class="ma-2" input-value="true" filter v-if="youtubeId" @click="seeInYoutube">
                 ID: {{ youtubeId }}
               </v-chip>
@@ -205,6 +206,7 @@ export default {
       this.$route.query.uuid || localStorage.getItem(Const.LOCAL_STRAGE_KEY.UUID) || util.uuid();
     const visited = JSON.parse(localStorage.getItem(Const.LOCAL_STRAGE_KEY.VISITED) || '[]');
     return {
+      ver: Const.APP_VERSION,
       ...input,
       uuid,
       visited,

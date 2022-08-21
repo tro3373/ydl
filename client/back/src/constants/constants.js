@@ -1,6 +1,7 @@
 'use strict';
 
 const CommonConstants = {
+  APP_VERSION: '0.0.1',
   API_PREFIX: process.env.VUE_APP_API_PREFIX,
   LOCAL_STRAGE_KEY: {
     CACHE: 'local_strage_key_cache',
