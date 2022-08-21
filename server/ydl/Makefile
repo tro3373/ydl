@@ -53,7 +53,9 @@ tidy:
 gr_check:
 	@goreleaser check
 gr_snap:
-	@goreleaser release --snapshot --rm-dist # --skip-publish
+	@goreleaser release --snapshot --rm-dist $(OPT)
+gr_snap_skip_publish:
+	@OPT=--skip-publish make gr_snap
 gr_build:
 	@goreleaser build --snapshot --rm-dist
 
