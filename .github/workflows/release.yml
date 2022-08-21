@@ -31,7 +31,8 @@ jobs:
         run: npm install
         working-directory: client/back
       - name: Build Client
-        run: npm run build-prd
+        # run: npm run build-prd
+        run: make build STAGE=prd
         working-directory: client/back
       - name: Setup Go
         uses: actions/setup-go@v3
