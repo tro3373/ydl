@@ -13,12 +13,12 @@
           <v-form v-model="valid" ref="form">
             <v-card-title>
               <!-- YouTube Downloader -->
+              <!-- @focus="oembedGuard = false" -->
+              <!-- @blur="oembedGuard = true"   -->
               <v-text-field
                 v-model="url"
                 :rules="rules.url"
                 label="youtube url or id を入力"
-                @focus="oembedGuard = false"
-                @blur="oembedGuard = true"
                 clearable
               >
               </v-text-field>
@@ -210,7 +210,7 @@ export default {
       visited,
       // type: 'mp3',
       serverQueueing: false,
-      oembedGuard: true,
+      // oembedGuard: true,
       valid: this.valid,
       rules: {
         url: [
@@ -278,7 +278,8 @@ export default {
       return !!res;
     },
     async onYoutubeIdChanged() {
-      if (!this.youtubeId || this.oembedGuard) {
+      // if (!this.youtubeId || this.oembedGuard) {
+      if (!this.youtubeId) {
         return;
       }
       const res = await youtubeApilient.getOembedInfo(this.youtubeId);
