@@ -189,19 +189,7 @@ export default {
     },
   },
   data() {
-    const inputInit = {
-      url: '',
-      title: '',
-      artist: '',
-      album: '',
-      genre: '',
-    };
-    const input = JSON.parse(
-      localStorage.getItem(Const.LOCAL_STRAGE_KEY.CACHE) || JSON.stringify(inputInit)
-    );
-    if (!util.isEmpty(this.$route.query.url)) {
-      input.url = this.$route.query.url;
-    }
+    const input = this.getInputInitData();
     const uuid =
       this.$route.query.uuid || localStorage.getItem(Const.LOCAL_STRAGE_KEY.UUID) || util.uuid();
     const visited = JSON.parse(localStorage.getItem(Const.LOCAL_STRAGE_KEY.VISITED) || '[]');
@@ -267,9 +255,35 @@ export default {
   async mounted() {
     // this.$refs.form.validate(); // for submit icon not enable
     this.getRequestResultsWithUuid();
+    const url = this.$route.query.url;
+    if (!util.isEmpty(url)) {
+      this.url = url;
+      this.onYoutubeIdChanged();
+    }
   },
   methods: {
     ...mapActionsRequestResults(['getRequestResults']),
+    getInputInitData() {
+      const inputInit = {
+        url: '',
+        title: '',
+        artist: '',
+        album: '',
+        genre: '',
+      };
+      if (!util.isEmpty(this.$route.query.url)) {
+        const input = {
+          ...inputInit,
+          url: this.$route.query.url,
+        };
+        return input;
+      }
+      const cache = localStorage.getItem(Const.LOCAL_STRAGE_KEY.CACHE);
+      if (util.isEmpty(cache)) {
+        return inputInit;
+      }
+      return JSON.parse(localStorage.getItem(Const.LOCAL_STRAGE_KEY.CACHE));
+    },
     getRequestResultsWithUuid() {
       client.setUuid(this.uuid);
       this.getRequestResults();
