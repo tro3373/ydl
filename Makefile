@@ -49,11 +49,16 @@ build-client:
 	@docker-compose -f docker-compose.dev.yml \
 		run --rm -it \
 		client make build STAGE=prd
-build-app:
+_build-app:
 	@docker-compose -f docker-compose.dev.yml \
 		run --rm -it \
-		app make build
+		app make $(TARGET)
+build-app:
+	@TARGET=build make _build-app
+build-app-android:
+	@TARGET=build-android make _build-app
 build: build-client build-app
+build-android: build-client build-app-android
 
 prepare: check
 	@if [[ ${STAGE} == "dev" ]]; then \
