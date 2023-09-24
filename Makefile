@@ -1,6 +1,6 @@
 CONTAINER_ngx := nginx
 CONTAINER_client := client
-export OWNER := $(if $(OWNER),$(OWNER),$(shell git config --get remote.origin.url |sed -e 's,^.*:,,g' -e 's,/.*,,g'))
+export OWNER := tro3373
 export APP_NAME := ydl
 export APP_VER := 0.0.3
 
