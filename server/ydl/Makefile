@@ -50,6 +50,9 @@ deps:
 tidy:
 	@go mod tidy
 
+tidy-go:
+	@ver=$(shell go version|awk '{print $$3}' |sed -e 's,go\(.*\)\..*,\1,g') && go mod tidy -go=$${ver}
+
 gr_check:
 	@goreleaser check
 gr_snap:

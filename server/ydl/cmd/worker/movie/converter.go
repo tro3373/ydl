@@ -44,6 +44,7 @@ func StartConvert(task *task.Task) error {
 	args = append(args, taskPath.Audio)
 
 	util.LogInfo("==> Executing: ffmpeg", args)
+	//#nosec G204
 	cmd := exec.Command("ffmpeg", args...)
 	cmd.Dir = taskPath.Doing
 	cmd.Stdout = os.Stdout
