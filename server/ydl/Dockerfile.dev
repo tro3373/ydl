@@ -1,4 +1,4 @@
-FROM golang:1.18-bullseye
+FROM golang:1.21.1-bullseye
 
 RUN deps="git curl ffmpeg python3" && \
     set -eux && \

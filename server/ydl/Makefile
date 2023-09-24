@@ -56,11 +56,11 @@ tidy-go:
 gr_check:
 	@goreleaser check
 gr_snap:
-	@goreleaser release --snapshot --rm-dist $(OPT)
+	@goreleaser release --snapshot --clean $(OPT)
 gr_snap_skip_publish:
 	@OPT=--skip-publish make gr_snap
 gr_build:
-	@goreleaser build --snapshot --rm-dist
+	@goreleaser build --snapshot --clean
 
 curl_get:
 	@curl \
