@@ -48,7 +48,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Untar release
-        run: tar xvfpz dist/*linux*tar.gz
+        run: tar xvfpz dist/*Linux*tar.gz
         working-directory: server/ydl
       - name: Build Image
         run: make build-image-prd
