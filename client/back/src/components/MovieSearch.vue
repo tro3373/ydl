@@ -223,7 +223,7 @@ export default {
       if (_.isEmpty(val)) return '';
       if (this.validate(val)) return val;
       if (val.match(/^http.*\/youtu.be\/.*/)) {
-        const _id = val.replace(/^http.*\/youtu.be\//, '');
+        const _id = val.replace(/^http.*\/youtu.be\//, '').replace(/\?.*/, '');
         if (this.validate(_id)) return _id;
       }
       if (val.match(/^http.*\/embed\/.*/)) {
