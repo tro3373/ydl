@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -101,7 +100,7 @@ func GetReleaseLatestTagInfo(repo string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	bodyText, err := ioutil.ReadAll(resp.Body)
+	bodyText, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to reading response")
 	}
@@ -121,13 +120,14 @@ func prepareRequest(url string) (*http.Request, error) {
 	return req, nil
 }
 
-func downloadResource(dstd, repo string, id float64, c chan int) error {
+func downloadResource(dstd, repo string, id float64, c chan int) {
 	defer func() { c <- 1 }()
 	url := fmt.Sprintf("https://api.github.com/repos/%s/releases/assets/%.0f", repo, id)
 	fmt.Printf("Start download: %s\n", url)
 	req, err := prepareRequest(url)
 	if err != nil {
-		return err
+		fmt.Printf("Failed to prepare request: %s\n", err)
+		return
 	}
 	req.Header.Add("Accept", "application/octet-stream")
 
@@ -137,14 +137,15 @@ func downloadResource(dstd, repo string, id float64, c chan int) error {
 	disp := resp.Header.Get("Content-disposition")
 	dst, err := getDistPathFromDisposition(dstd, disp)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to %s", "parse disposition")
+		fmt.Printf("Failed to parse disposition: %s\n", err)
+		return
 	}
 	err = save(dst, resp.Body)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to save resposence %s", dst)
+		fmt.Printf("Failed to save resposence %s, err:%s\n", dst, err)
+		return
 	}
 	fmt.Printf("Finished download: %s -> %s\n", url, disp)
-	return nil
 }
 
 func save(dst string, body io.ReadCloser) error {

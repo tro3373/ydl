@@ -41,8 +41,8 @@ func NewRes(task task.Task, doing bool) Res {
 	return res
 }
 
-func getFileSize() {
-}
+// func getFileSize() {
+// }
 
 func toResourcePath(dirPath, filePath string) string {
 	if len(filePath) == 0 {

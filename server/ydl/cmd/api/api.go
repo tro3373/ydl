@@ -25,7 +25,7 @@ func Start(ctx ctx.Ctx) {
 	}
 }
 
-func startInner(ctx ctx.Ctx) error {
+func startInner(ctx ctx.Ctx) (err error) {
 	r := gin.Default()
 
 	zapLogger, err := newLogger()
@@ -33,7 +33,9 @@ func startInner(ctx ctx.Ctx) error {
 		return fmt.Errorf("Failed to initialize zap logger : %w", err)
 	}
 	logger = zapLogger
-	defer logger.Sync()
+	defer func() {
+		err = logger.Sync()
+	}()
 
 	r.Use(middleware.NewRecordUaAndTimeHandler(logger))
 	r.Use(middleware.NewResourceHandler("/resource", "./work", logger))

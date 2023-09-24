@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +10,7 @@ import (
 
 func (h *Handler) ok(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"message": fmt.Sprintf("ok"),
+		"message": "ok",
 	})
 }
 

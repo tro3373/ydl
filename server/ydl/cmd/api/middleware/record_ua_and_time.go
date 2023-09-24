@@ -19,7 +19,7 @@ func NewRecordUaAndTimeHandler(logger *zap.Logger) func(c *gin.Context) {
 			zap.String("uuid", uuid),
 			zap.String("ua", ua),
 			zap.Int("status", c.Writer.Status()),
-			zap.Duration("elapsed", time.Now().Sub(oldTime)),
+			zap.Duration("elapsed", time.Since(oldTime)),
 		)
 	}
 }

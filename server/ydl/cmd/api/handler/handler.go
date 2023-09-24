@@ -58,9 +58,7 @@ func (h *Handler) GetDones(c *gin.Context) {
 		h.handleAsServerError(c, "Failed to read done jsons.", err)
 		return
 	}
-	for _, doneJson := range doneJsons {
-		jsons = append(jsons, doneJson)
-	}
+	jsons = append(jsons, doneJsons...)
 	h.list(c, jsons)
 }
 

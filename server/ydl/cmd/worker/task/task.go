@@ -3,7 +3,6 @@ package task
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -98,7 +97,7 @@ func (task *Task) Key() string {
 }
 
 func (task *Task) readJson(jsonPath string) (*request.Req, error) {
-	raw, err := ioutil.ReadFile(filepath.Clean(jsonPath))
+	raw, err := os.ReadFile(filepath.Clean(jsonPath))
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read json %s: %w", jsonPath, err)
 	}
@@ -159,7 +158,7 @@ func (task *Task) genTitleFromInfoIfEnable() {
 	if len(matches) > 0 {
 		return
 	}
-	raw, err := ioutil.ReadFile(task.TaskPath.InfoJson)
+	raw, err := os.ReadFile(task.TaskPath.InfoJson)
 	if err != nil {
 		fmt.Println("Failed to read info json.", task.TaskPath.InfoJson, err)
 		return
@@ -228,7 +227,7 @@ func (task *Task) save(done bool) error {
 		dstd = task.TaskPath.Done
 	}
 	dst := filepath.Join(dstd, "task.json")
-	return ioutil.WriteFile(dst, data, 0664) //#nosec G306
+	return os.WriteFile(dst, data, 0664) //#nosec G306
 }
 
 func (task *Task) RenameDoing2DoneHandler(dir, name string) error {
