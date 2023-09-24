@@ -157,7 +157,7 @@ import EmbedPlayer from '@/components/EmbedPlayer.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import util from '../util/util.js';
 import client from '@/api/client.js';
-import youtubeApilient from '@/api/youtubeApiClient.js';
+import youtubeApiClient from '@/api/youtubeApiClient.js';
 import Const from '../constants/constants.js';
 const { mapActions: mapActionsRequestResults, mapGetters: mapGettersRequestResults } =
   createNamespacedHelpers('requestResults');
@@ -298,7 +298,7 @@ export default {
       if (!this.youtubeId) {
         return;
       }
-      const res = await youtubeApilient.getOembedInfo(this.youtubeId);
+      const res = await youtubeApiClient.getOembedInfo(this.youtubeId);
       this.title = res.title;
       this.artist = res.author_name;
       this.album = res.author_name;
