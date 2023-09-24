@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   nginx:
     image: nginx
@@ -36,10 +36,9 @@ services:
       - ./data/ydl:/go/pkg
     ports:
       - 3000:3000
-    tty:
-      true
+    tty: true
   client:
-    image: node:16
+    image: node:20
     build:
       context: ./client/back
     container_name: client
