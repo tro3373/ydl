@@ -38,7 +38,10 @@ sec:
 build:
 	@pre_env="env GOOS=linux " make _build
 
-build-android:
+build-android: build-android-userland
+build-android-userland:
+	@pre_env="env GOARCH=arm64" make _build
+build-android-termux:
 	@pre_env="env GOOS=android GOARCH=arm64" make _build
 
 _build: check clean generate sec
