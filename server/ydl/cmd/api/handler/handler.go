@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -110,7 +109,7 @@ func (h *Handler) readJsons(doneFiles []string, uuid string, doing bool) ([]resp
 	var reses []response.Res
 	for _, file := range doneFiles {
 		h.logger.Debug("[INFO] ==> ", zap.String("uuid", uuid), zap.String("file", file))
-		raw, err := ioutil.ReadFile(filepath.Clean(file))
+		raw, err := os.ReadFile(filepath.Clean(file))
 		if err != nil {
 			return nil, err
 		}
@@ -138,8 +137,8 @@ func (h *Handler) saveRequest(dstRootDir string, req request.Req) error {
 
 	if !util.Exists(dstRootDir) {
 		//#nosec G301
-		if err := os.MkdirAll(dstRootDir, 0775); err != nil {
-			return fmt.Errorf("Failed to create directory %s %d: %w", dstRootDir, 0775, err)
+		if err := os.MkdirAll(dstRootDir, 0750); err != nil {
+			return fmt.Errorf("Failed to create directory %s %d: %w", dstRootDir, 0750, err)
 		}
 	}
 	dstFile := h.getJsonPath(dstRootDir, key)
@@ -147,7 +146,7 @@ func (h *Handler) saveRequest(dstRootDir string, req request.Req) error {
 	h.logger.Info("==> Saving request..", zap.String("dstFile", dstFile))
 	data, _ := json.MarshalIndent(req, "", " ")
 	//#nosec G306
-	return ioutil.WriteFile(dstFile, data, 0664)
+	return os.WriteFile(dstFile, data, 0664)
 }
 
 func (h *Handler) removeRequest(rootDir, key string) error {

@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -111,7 +110,7 @@ func ReadFileIfExist(filePath string) (string, error) {
 	if len(filePath) == 0 || !Exists(filePath) {
 		return "", nil
 	}
-	raw, err := ioutil.ReadFile(filepath.Clean(filePath))
+	raw, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
 		return "", err
 	}
@@ -119,7 +118,7 @@ func ReadFileIfExist(filePath string) (string, error) {
 }
 
 func WriteFile(filePath, data string) error {
-	return ioutil.WriteFile(filePath, []byte(data), 0664) //#nosec G306
+	return os.WriteFile(filePath, []byte(data), 0664) //#nosec G306
 }
 
 func IsEmptyDir(dirPath string) (bool, error) {
@@ -231,7 +230,7 @@ func CreateDirsIfNotExist(dirPaths []string) error {
 			continue
 		}
 		//#nosec G301
-		if err := os.MkdirAll(dir, 0775); err != nil {
+		if err := os.MkdirAll(dir, 0750); err != nil {
 			return err
 		}
 	}
